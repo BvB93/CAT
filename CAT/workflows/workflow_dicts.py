@@ -21,7 +21,6 @@ from .key_map import (
     JOB_SETTINGS_CRS,
     JOB_SETTINGS_BDE,
     JOB_SETTINGS_ASA,
-    JOB_SETTINGS_CDFT,
     ASA_INT,
     ASA_STRAIN,
     ASA_E,
@@ -32,27 +31,14 @@ from .key_map import (
     SETTINGS_ASA,
     SETTINGS_BDE1,
     SETTINGS_BDE2,
-    SETTINGS_CDFT,
-    V_BULK,
-    CDFT_MU,
-    CDFT_CHI,
-    CDFT_ETA,
-    CDFT_S,
-    CDFT_GAMMA,
-    CDFT_OMEGA,
-    CDFT_NUCLEOFUGE,
-    CDFT_ELECTROFUGE,
-    CDFT_W_MINUS,
-    CDFT_W_PLUS,
-    CDFT_ELECTROPHILICITY,
-    CDFT_DELTAF_MINUS,
-    CDFT_DELTAF_PLUS,
-    CDFT_MU_MINUS,
-    CDFT_MU_PLUS
+    V_BULK
 )
 
 if TYPE_CHECKING:
-    from nanoutils import TypedDict
+    if sys.version_info >= (3, 8):
+        from typing import TypedDict
+    else:
+        from typing_extensions import TypedDict
 
     class _TemplateMapping(TypedDict):
         description: str
@@ -103,18 +89,6 @@ def finalize_templates():
                       'export_columns': (V_BULK,)},
         'multi_ligand': {'import_columns': {HDF5_INDEX: -1, OPT: False},
                          'export_columns': (HDF5_INDEX, OPT)},
-        'cdft': {'import_columns': {CDFT_MU: np.nan, CDFT_CHI: np.nan, CDFT_ETA: np.nan,
-                                    CDFT_S: np.nan, CDFT_GAMMA: np.nan, CDFT_OMEGA: np.nan,
-                                    CDFT_NUCLEOFUGE: np.nan, CDFT_ELECTROFUGE: np.nan,
-                                    CDFT_W_MINUS: np.nan, CDFT_W_PLUS: np.nan,
-                                    CDFT_ELECTROPHILICITY: np.nan, CDFT_DELTAF_MINUS: np.nan,
-                                    CDFT_DELTAF_PLUS: np.nan, CDFT_MU_MINUS: np.nan,
-                                    CDFT_MU_PLUS: np.nan},
-                 'export_columns': (JOB_SETTINGS_CDFT, SETTINGS_CDFT, CDFT_MU, CDFT_CHI, CDFT_ETA, CDFT_S,
-                                    CDFT_GAMMA, CDFT_OMEGA, CDFT_NUCLEOFUGE, CDFT_ELECTROFUGE,
-                                    CDFT_W_MINUS, CDFT_W_PLUS, CDFT_ELECTROPHILICITY,
-                                    CDFT_DELTAF_MINUS, CDFT_DELTAF_PLUS, CDFT_MU_MINUS,
-                                    CDFT_MU_PLUS)},
     }
 
     templates = _load_templates()

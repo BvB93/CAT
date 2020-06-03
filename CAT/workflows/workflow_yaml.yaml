@@ -152,17 +152,3 @@ multi_ligand:
         cluster_size: [optional, qd, multi_ligand, cluster_size]
         weight: [optional, qd, multi_ligand, weight]
         randomness: [optional, qd, multi_ligand, randomness]
-
-cdft:
-    description: Conceptual DFT property calculation
-    mol_type: ligand
-    template:
-        db: [optional, database, db]
-        read: [optional, database, read]
-        write: [optional, database, write]
-        overwrite: [optional, database, overwrite]
-
-        path: [optional, ligand, dirname]
-        keep_files: [optional, ligand, cdft, keep_files]
-        job1: [optional, ligand, cdft, job1]
-        s1: [optional, ligand, cdft, s1]
