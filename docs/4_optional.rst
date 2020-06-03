@@ -33,6 +33,7 @@ Option                                    Description
 :attr:`optional.ligand.functional_groups` Manually specify SMILES strings representing functional groups.
 :attr:`optional.ligand.split`             If the ligand should be attached in its entirety to the core or not.
 :attr:`optional.ligand.cosmo-rs`          Perform a property calculation with COSMO-RS on the ligand.
+:attr:`optional.ligand.cdft`              Perform a conceptual DFT calculation with ADF on the ligand.
 
 :attr:`optional.qd.dirname`               The name of the directory where all quantum dots will be stored.
 :attr:`optional.qd.construct_qd`          Whether or not the quantum dot should actually be constructed or not.
@@ -69,6 +70,7 @@ Default Settings
             functional_groups: null
             split: True
             cosmo-rs: False
+            cdft: False
 
         qd:
             dirname: qd
@@ -546,6 +548,7 @@ Ligand
                 functional_groups: null
                 split: True
                 cosmo-rs: False
+                cdft: False
 
 |
 
@@ -588,7 +591,6 @@ Ligand
                             job2: ADFJob
 
 
-
     .. attribute:: optional.ligand.functional_groups
 
         :Parameter:     * **Type** - :class:`str` or :class:`tuple` [:class:`str`]
@@ -611,6 +613,7 @@ Ligand
 
         .. note::
             The yaml format uses ``null`` rather than ``None`` as in Python.
+
 
     .. attribute:: optional.ligand.split
 
@@ -656,6 +659,58 @@ Ligand
         calculated in the following solvents: acetone, acetonitrile,
         dimethyl formamide (DMF), dimethyl sulfoxide (DMSO), ethyl acetate,
         ethanol, *n*-hexane, toluene and water.
+
+
+    .. attribute:: optional.ligand.cdft
+
+        :Parameter:     * **Type** - :class:`bool` or :class:`dict`
+                        * **Default value** – ``False``
+
+
+        Perform a conceptual DFT (CDFT) calculation with `ADF <https://www.scm.com/doc/ADF/Input/Advanced_analysis.html#conceptual-dft>`_ on the ligand.
+
+        All global descriptors are, if installed, stored in the database.
+        This includes the following properties:
+
+        * Electronic chemical potential (mu)
+        * Electronic chemical potential (mu+)
+        * Electronic chemical potential (mu-)
+        * Electronegativity (chi=-mu)
+        * Hardness (eta)
+        * Softness (S)
+        * Hyperhardness (gamma)
+        * Electrophilicity index (w=omega)
+        * Dissocation energy (nucleofuge)
+        * Dissociation energy (electrofuge)
+        * Electrodonating power (w-)
+        * Electroaccepting power(w+)
+        * Net Electrophilicity
+        * Global Dual Descriptor Deltaf+
+        * Global Dual Descriptor Deltaf-
+
+        This block can be furthermore customized with one or more of the following keys:
+
+        * ``"keep_files"``: Whether or not to delete the ADF output afterwards.
+        * ``"job1"``: The type of PLAMS Job used for running the calculation.
+          The only value that should be supplied here (if any) is ``"ADFJob"``.
+        * ``"s1"``: The job Settings used for running the CDFT calculation.
+          Can be left blank to use the default template (:data:`nanoCAT.cdft.cdft`).
+
+        .. admonition:: Examples
+
+            .. code:: yaml
+
+                optional:
+                    ligand:
+                        cdft: True
+
+            .. code:: yaml
+
+                optional:
+                    ligand:
+                        cdft:
+                            job1: ADFJob
+                            s1: ...  # Insert custom settings here
 
 |
 

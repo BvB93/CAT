@@ -124,7 +124,8 @@ def test_ligand_schema() -> None:
         'functional_groups': None,
         'optimize': {'job1': None},
         'split': True,
-        'cosmo-rs': False
+        'cosmo-rs': False,
+        'cdft': False
     }
 
     assertion.eq(ligand_schema.validate(lig_dict), ref)

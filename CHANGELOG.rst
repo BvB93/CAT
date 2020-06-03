@@ -11,6 +11,12 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 * WiP: Added an option the import pre-built quantum dots.
 
 
+0.9.1
+*****
+* Added a new conceptual DFT (CDFT) workflow to Nano-CAT
+  (https://github.com/nlesc-nano/nano-CAT/pull/57).
+
+
 0.9.0
 *****
 * Moved a number of functions to the `nanoutils <https://github.com/nlesc-nano/Nano-Utils>`_ package.

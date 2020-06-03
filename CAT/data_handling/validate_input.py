@@ -33,7 +33,8 @@ from .validation_schemas import (
     asa_schema,
     ligand_opt_schema,
     subset_schema,
-    multi_ligand_schema
+    multi_ligand_schema,
+    cdft_schema
 )
 
 from .validate_ff import validate_ff, update_ff_jobs
@@ -111,12 +112,14 @@ def validate_input(s: Settings) -> None:
 
     if s.optional.ligand.optimize:
         s.optional.ligand.optimize = ligand_opt_schema.validate(s.optional.ligand.optimize)
+    if s.optional.ligand.cdft:
+        s.optional.ligand.cdft = cdft_schema.validate(s.optional.ligand.cdft)
     if s.optional.ligand['cosmo-rs']:
         crs = s.optional.ligand.pop('cosmo-rs')
         s.optional.ligand.crs = crs_schema.validate(crs)
+
     if s.optional.qd.optimize:
         s.optional.qd.optimize = qd_opt_schema.validate(s.optional.qd.optimize)
-
     if s.optional.qd.dissociate:
         s.optional.qd.dissociate = bde_schema.validate(s.optional.qd.dissociate)
     if s.optional.qd.activation_strain:

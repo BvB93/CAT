@@ -108,8 +108,11 @@ def pre_process_settings(mol: Molecule, s: Settings,
         ret.input.ams.system.bondorders._1 = adf_connectivity(mol)
         if 'uff' not in s.input:
             ret.input.ams.system.charge = sum(
-                [at.properties.charge for at in mol if 'charge' in at.properties]
+                [at.properties.get('charge', 0) for at in mol]
             )
+    elif job_type is ADFJob:
+        if not s.input.charge:
+            s.input.charge = int(sum(at.properties.get('charge', 0) for at in mol))
     return ret
 
 

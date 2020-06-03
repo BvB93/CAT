@@ -18,8 +18,6 @@ Examples
 
 """
 
-import warnings
-
 try:
     from nanoCAT import recipes as _recipes
     from nanoCAT.recipes import *
@@ -28,12 +26,15 @@ try:
     del _recipes
 
 except ImportError as ex:
+    import warnings as _warnings
+
     __all__ = []
 
     _warning = ImportWarning(str(ex))
     _warning.__cause__ = ex
-    warnings.warn(_warning)
+    _warnings.warn(_warning)
     del _warning
+    del _warnings
 
 finally:
     from . import dye as _dye
@@ -41,4 +42,3 @@ finally:
 
     __all__ += _dye.__all__
     del _dye
-    del warnings

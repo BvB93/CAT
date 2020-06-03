@@ -60,16 +60,17 @@ try:
     from nanoCAT.bde.bde_workflow import init_bde
     from nanoCAT.ligand_solvation import init_solv
     from nanoCAT.ff.ff_assignment import init_ff_assignment
+    from nanoCAT.cdft import init_cdft
 
     NANO_CAT: Optional[ImportError] = None
 except ImportError as ex:
-    NANO_CAT: Optional[ImportError] = ex
+    NANO_CAT = ex
 
 try:
     import dataCAT
     DATA_CAT: Optional[ImportError] = None
 except ImportError as ex:
-    DATA_CAT: Optional[ImportError] = ex
+    DATA_CAT = ex
 
 __all__ = ['prep']
 
@@ -261,6 +262,7 @@ def prep_ligand(ligand_df: SettingsDataFrame) -> SettingsDataFrame:
     * Ligand geometry optimization
     * Ligand bulkiness calculations
     * Ligand COSMO-RS calculations
+    * Ligand conceptual DFT calculations
 
     .. _Nano-CAT: https://github.com/nlesc-nano/nano-CAT
 
@@ -284,6 +286,7 @@ def prep_ligand(ligand_df: SettingsDataFrame) -> SettingsDataFrame:
     forcefield = ligand_df.settings.optional.forcefield
     optimize = ligand_df.settings.optional.ligand.optimize
     crs = ligand_df.settings.optional.ligand.crs
+    cdft = ligand_df.settings.optional.ligand.cdft
 
     # Identify functional groups within the ligand.
     ligand_df = init_ligand_anchoring(ligand_df)
@@ -309,6 +312,11 @@ def prep_ligand(ligand_df: SettingsDataFrame) -> SettingsDataFrame:
         val_nano_cat("Automatic ligand forcefield assignment requires MATCH "
                      "(Multipurpose Atom-Typer for CHARMM) and the nano-CAT package")
         init_ff_assignment(ligand_df)
+
+    # Run conceptual DFT calculations
+    if cdft:
+        val_nano_cat("Ligand conceptual DFT calculations require the nano-CAT package")
+        init_cdft(ligand_df)
 
     return ligand_df
 

@@ -45,6 +45,7 @@ def test_validate_input() -> None:
     ref.ligand.optimize = {'job1': None, 'job2': None, 's1': None, 's2': Settings(),
                            'use_ff': False, 'keep_files': True}
     ref.ligand.split = True
+    ref.ligand.cdft = False
 
     ref.qd.bulkiness = False
     ref.qd.construct_qd = True

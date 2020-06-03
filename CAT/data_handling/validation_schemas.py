@@ -483,6 +483,13 @@ ligand_schema: Schema = Schema({
             And(bool, Use(lambda n: {'job1': 'AMSJob'} if n else False)),
             error='optional.ligand.cosmo-rs expects a boolean or dictionary'
         ),
+
+    Optional_('cdft', default=False):  # Settings specific to ligand conceptual dft calculations
+        Or(
+            dict,
+            And(bool, Use(lambda n: {'job1': 'ADFJob'} if n else False)),
+            error='optional.ligand.cdft expects a boolean or dictionary'
+        ),
 })
 
 
@@ -961,4 +968,36 @@ multi_ligand_schema: Schema = Schema({
             None,
             And(val_float, lambda n: 0 <= float(n) <= 1, Use(float))
         )
+})
+
+
+#: Schema for validating the ``['optional']['ligand']['cdft']`` block.
+cdft_schema: Schema = Schema({
+    # Delete files after the calculations are finished
+    Optional_('keep_files', default=True):
+        And(bool, error='optional.ligand.cdft.keep_files expects a boolean'),
+
+    # The Job type for the final geometry optimization
+    Optional_('job1', default=lambda n: ADFJob):
+        Or(
+            And(
+                And(type, lambda n: issubclass(n, Job), Use(val_job_type)),
+                error=('optional.ligand.cdft.job1 expects a type object '
+                       'that is a subclass of plams.Job')
+            ),
+            And(
+                str, Use(str_to_job_type),
+                error=('optional.ligand.cdft.job1 expects a string '
+                       'that is a valid plams.Job alias')
+            ),
+        ),
+
+    # The Job Settings for the final geometry optimization
+    Optional_('s2', default=Settings):
+        Or(
+            None,
+            dict,
+            And(str, Use(lambda n: get_template(n, from_cat_data=False))),
+            error='optional.ligand.cdft.s1 expects a string or a dictionary'
+        ),
 })
