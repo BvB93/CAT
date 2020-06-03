@@ -58,7 +58,7 @@ if TYPE_CHECKING:
         description: str
         mol_type: str
         template: Mapping[str, Tuple[str, ...]]
-        import_columns: Mapping[Tuple[str, str], Any]
+        import_columns: Mapping[Tuple[str, str], float]
         export_columns: Tuple[Tuple[str, str], ...]
 
 else:
