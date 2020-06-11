@@ -1,3 +1,5 @@
-from .addlig import add_ligands, export_dyes
+"""Various dye-related modules."""
 
-__all__ = ['add_ligands', 'export_dyes']
+from .addlig import add_ligands, export_dyes, sa_scores
+
+__all__ = ['add_ligands', 'export_dyes', 'sa_scores']

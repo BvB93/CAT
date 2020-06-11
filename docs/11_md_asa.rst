@@ -173,6 +173,7 @@ that the user-specified forcefield is used during the construction of the MD tra
 activation_strain
 -----------------
 .. attribute:: optional.qd.activation_strain
+    :noindex:
 
     All settings related to the activation strain analyses.
 

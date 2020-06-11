@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/nlesc-nano/CAT.svg?branch=master
-   :target: https://travis-ci.org/nlesc-nano/CAT
+.. image:: https://github.com/nlesc-nano/CAT/workflows/Build%20with%20Conda/badge.svg
+   :target: https://github.com/nlesc-nano/CAT/actions?query=workflow%3A%22Build+with+Conda%22
 .. image:: https://readthedocs.org/projects/cat/badge/?version=latest
    :target: https://cat.readthedocs.io/en/latest/
 .. image:: https://zenodo.org/badge/169708827.svg
@@ -16,7 +16,7 @@
 
 
 ##############################
-Compound Attachment Tool 0.9.1
+Compound Attachment Tool 0.9.4
 ##############################
 
 **CAT** is a collection of tools designed for the construction of various chemical compounds.

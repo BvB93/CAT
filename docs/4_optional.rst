@@ -370,7 +370,7 @@ Core
                 :scale: 15 %
                 :align: center
 
-            |
+        .. note::
             An example of four different ``"uniform"`` distributions at :math:`f=1/16`,
             :math:`f=1/8`, :math:`f=1/4` and :math:`f=1/2`.
 
@@ -466,7 +466,7 @@ Core
                 :scale: 15 %
                 :align: center
 
-            |
+        .. note::
             An example of clusters of varying size (:code:`cluster_size = [1, 2, 9, 1]`)
             with :math:`f=1/4`.
 

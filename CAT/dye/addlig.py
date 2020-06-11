@@ -1,8 +1,4 @@
-"""
-CAT.dye.addlig
-==============
-
-A module for multiple compound attachment and export of the xyz files.
+"""A module for multiple compound attachment and export of the .xyz files.
 
 Index
 -----
@@ -38,6 +34,8 @@ from CAT.attachment.dye import label_lig, label_core, substitution
 from CAT.attachment.substitution_symmetry import del_equiv_structures
 
 __all__ = ['add_ligands', 'export_dyes', 'sa_scores']
+
+# flake8: noqa: N806
 
 
 def add_ligands(core_dir: str,
@@ -109,7 +107,7 @@ def export_dyes(mol_list: Iterable[Molecule],
                 new_dir: str = 'new_molecules',
                 err_dir: str = 'err_molecules',
                 min_dist: float = 1.2) -> None:
-    """Exports molecular coordinates to .xyz files
+    """Exports molecular coordinates to .xyz files.
 
     Parameters
     ----------

@@ -1,8 +1,4 @@
-"""
-CAT.base
-========
-
-A module handling the interaction with all other modules, functioning as recipe.
+"""A module handling the interaction with all other modules, functioning as recipe.
 
 Index
 -----

@@ -1,8 +1,4 @@
-"""
-CAT.utils
-=========
-
-A module with miscellaneous functions.
+"""A module with miscellaneous functions.
 
 Index
 -----
@@ -27,26 +23,26 @@ API
 import os
 import yaml
 import pkg_resources as pkg
-from math import factorial
 from types import MappingProxyType
 from shutil import rmtree
 from os.path import join, isdir, isfile, exists
-from itertools import cycle, chain, repeat, combinations
+from itertools import cycle, chain, repeat
 from contextlib import redirect_stdout
 from collections import abc
 from typing import (
     Iterable, Union, TypeVar, Mapping, Type, Generator, Iterator,
-    Any, NoReturn, Tuple, Dict, List, overload,  NamedTuple, Callable
+    Any, NoReturn, Dict, overload
 )
 
 import numpy as np
 from scipy.spatial import cKDTree
 
+from nanoutils import as_nd_array
 from scm.plams.core.basejob import Job
 from scm.plams.interfaces.thirdparty.orca import ORCAJob
 from scm.plams import (
     config, Settings, Molecule, MoleculeError, PeriodicTable, init,
-    from_smiles, AMSJob, ADFJob, Cp2kJob, DiracJob, GamessJob
+    from_smiles, AMSJob, ADFJob, Cp2kJob, DiracJob, GamessJob, CRSJob
 )
 
 from .logger import logger
@@ -54,7 +50,7 @@ from .mol_utils import to_atnum
 from .gen_job_manager import GenJobManager
 
 __all__ = [
-    'JOB_MAP', 'check_sys_var', 'dict_concatenate', 'get_template', 'VersionInfo',
+    'JOB_MAP', 'check_sys_var', 'dict_concatenate', 'get_template',
     'cycle_accumulate', 'iter_repeat', 'get_nearest_neighbors'
 ]
 
@@ -64,7 +60,8 @@ JOB_MAP: Mapping[Type[Job], str] = MappingProxyType({
     DiracJob: 'dirac',
     Cp2kJob: 'cp2k',
     GamessJob: 'gamess',
-    ORCAJob: 'orca'
+    ORCAJob: 'orca',
+    CRSJob: 'cosmo-rs'
 })
 
 T1 = TypeVar('T1')
@@ -131,9 +128,11 @@ def get_template(template_name: str, from_cat_data: bool = True) -> Settings:
 
 
 @overload
-def validate_path(path: None) -> str: ...
-@overload
-def validate_path(path: P) -> P: ...
+def validate_path(path: None) -> str:
+    ...
+@overload   # noqa: E302
+def validate_path(path: P) -> P:
+    ...
 def validate_path(path):  # noqa: E302
     """Validate a provided directory path.
 
@@ -169,10 +168,12 @@ def validate_path(path):  # noqa: E302
 
 
 @overload
-def validate_core_atom(atom: int) -> int: ...
-@overload
-def validate_core_atom(atom: str) -> Union[Molecule, int]: ...
-def validate_core_atom(atom):
+def validate_core_atom(atom: int) -> int:
+    ...
+@overload  # noqa: E302
+def validate_core_atom(atom: str) -> Union[Molecule, int]:
+    ...
+def validate_core_atom(atom):  # noqa: E302
     """Parse and validate the ``["optional"]["qd"]["dissociate"]["core_atom"]`` argument."""
     # Potential atomic number or symbol
     if isinstance(atom, int) or atom in PeriodicTable.symtonum:
@@ -275,9 +276,11 @@ def restart_init(path: str, folder: str, hashing: str = 'input') -> None:
 
 
 @overload
-def cycle_accumulate(iterable: Iterable[T1]) -> Generator[T1, None, None]: ...
-@overload
-def cycle_accumulate(iterable: Iterable[T1], start: T1) -> Generator[T1, None, None]: ...
+def cycle_accumulate(iterable: Iterable[T1]) -> Generator[T1, None, None]:
+    ...
+@overload  # noqa: E302
+def cycle_accumulate(iterable: Iterable[T1], start: T1) -> Generator[T1, None, None]:
+    ...
 def cycle_accumulate(iterable, start=0):  # noqa: E302
     """Accumulate and return elements from **iterable** until it is exhausted.
 
@@ -299,8 +302,10 @@ def iter_repeat(iterable: Iterable[T1], times: int) -> Iterator[T1]:
     --------
     .. code:: python
 
+        >>> from CAT.utils import iter_repeat
+
         >>> iterable = range(3)
-        >>> times = 2
+        >>> n = 2
         >>> iterator = iter_repeat(iterable, n)
         >>> for i in iterator:
         ...     print(i)
@@ -386,13 +391,13 @@ def get_nearest_neighbors(center: Union[Molecule, np.ndarray],
         xyz2 = np.array(neighbor, ndmin=2, copy=False)
 
     if isinstance(k, abc.Iterable):
-        k = as_1d_array(k, dtype=int)
+        k = as_nd_array(k, dtype=int)
 
     tree = cKDTree(xyz2, **kwargs)
     try:
         dist, idx = tree.query(xyz1, k=k, distance_upper_bound=distance_upper_bound)
     except ValueError as ex:
-        _parse_ValueError(ex, k)
+        _parse_value_error(ex, k)
 
     if idx.ndim == 1:  # Always return the indices as 2D array
         idx.shape += (1,)
@@ -402,7 +407,7 @@ def get_nearest_neighbors(center: Union[Molecule, np.ndarray],
     return idx
 
 
-def _parse_ValueError(ex: Exception, k: Any) -> NoReturn:
+def _parse_value_error(ex: Exception, k: Any) -> NoReturn:
     """Post-process a :exc:`ValueError` raised by :func:`get_nearest_neighbors`."""
     if isinstance(k, abc.Iterable) and min(k) < 1:
         raise ValueError("All elements of 'k' must be larger than or equal to 1; "

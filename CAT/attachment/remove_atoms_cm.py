@@ -1,8 +1,4 @@
-"""
-CAT.attachment.remove_atoms_cm
-==============================
-
-A context manager for temporary removing a set of atoms from a molecule.
+"""A context manager for temporary removing a set of atoms from a molecule.
 
 Index
 -----
@@ -18,15 +14,14 @@ API
 """
 
 import sys
-from typing import Iterable, Union, Sequence, Optional, cast, Tuple
+from typing import Iterable, Union, Sequence, cast
 from contextlib import AbstractContextManager
-from collections import abc
 
 from scm.plams import Molecule, Atom, Bond, MoleculeError
 
 if sys.version_info >= (3, 8):
     # dict.__reversed__() was added in Python 3.8
-    from builtins import dict as OrderedDict
+    from builtins import dict as OrderedDict  # noqa: N812
 else:
     from collections import OrderedDict
 
@@ -46,19 +41,19 @@ class RemoveAtoms(AbstractContextManager):
     --------
     .. code:: python
 
-        >>> from scm.plams import Molecule, Atom
+        >>> from scm.plams import Molecule, Atom, from_smiles
 
-        >>> mol: Molecule = ...  # A random molecule
+        >>> mol: Molecule = from_smiles('CO')
         >>> atom1: Atom = mol[1]
         >>> atom2: Atom = mol[2]
 
         >>> atom_set = {atom1, atom2}
         >>> with RemoveAtoms(mol, atom_set):
         ...     print(atom1 in mol, atom2 in mol)
-        False, False
+        False False
 
         >>> print(atom1 in mol, atom2 in mol)
-        True, True
+        True True
 
     Parameters
     ----------

@@ -1,8 +1,4 @@
-"""
-CAT.attachment.mol_split_cm
-===========================
-
-A context manager for temporary splitting (and reassembling) molecules.
+"""A context manager for temporary splitting (and reassembling) molecules.
 
 Index
 -----
@@ -26,7 +22,7 @@ from contextlib import AbstractContextManager
 
 from scm.plams import Molecule, Atom, PT, Bond, MoleculeError, PTError, rotation_matrix
 
-from ..mol_utils import separate_mod
+from ..mol_utils import separate_mod  # noqa: F401
 
 __all__ = ['SplitMol']
 
@@ -47,9 +43,9 @@ class SplitMol(AbstractContextManager):
     --------
     .. code:: python
 
-        >>> from scm.plams import Molecule, Bond
+        >>> from scm.plams import Molecule, Bond, from_smiles
 
-        >>> mol: Molecule = ...  # A random molecule
+        >>> mol: Molecule = from_smiles('CC')  # Ethane
         >>> bond: Bond = mol[1, 2]
 
         # A backup of all bonds and atoms
@@ -59,14 +55,14 @@ class SplitMol(AbstractContextManager):
         # The context manager is opened; the bond is removed and the molecule is fragmented
         >>> with SplitMol(mol, bond) as fragment_tuple:
         ...     for fragment in fragment_tuple:
-        ...         fancy_operation(fragment)
+        ...         fancy_operation(fragment)  # doctest: +SKIP
         ...
         ...     print(
         ...         mol.bonds == bonds_backup,
         ...         mol.atoms == atoms_backup,
         ...         bond in mol.bonds
         ...     )
-        False, False, False
+        False False False
 
         # The context manager is closed; all atoms and bonds have been restored
         >>> print(
@@ -74,7 +70,7 @@ class SplitMol(AbstractContextManager):
         ...     mol.atoms == atoms_backup,
         ...     bond in mol.bonds
         ... )
-        True, True, True
+        True True True
 
     Parameters
     ----------

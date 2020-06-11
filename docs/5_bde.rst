@@ -302,7 +302,7 @@ Arguments - Job Customization
         while ``False`` will skip the thermochemical analysis completely.
 
 
-    .. attribute:: optional.qd.dissociate.s1
+    .. attribute:: optional.qd.dissociate.s2
 
         :Parameter:     * **Type** - :class:`dict`, :class:`str` or :class:`bool`
                         * **Default value** – See below

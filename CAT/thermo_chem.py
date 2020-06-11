@@ -1,8 +1,4 @@
-"""
-CAT.thermo_chem
-===============
-
-A module related to calculating thermochemical properties.
+"""A module related to calculating thermochemical properties.
 
 Index
 -----
@@ -26,6 +22,8 @@ from scm.plams import Molecule
 from scm.plams.tools.units import Units
 
 __all__ = ['get_thermo', 'get_entropy']
+
+# flake8: noqa: N806,N803
 
 
 def get_entropy(mol: Molecule,

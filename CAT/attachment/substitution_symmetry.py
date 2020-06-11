@@ -13,8 +13,8 @@ __all__ = ['del_equiv_structures']
 
 
 def find_equivalent_atoms(mol, idx=None, idx_substract=0):
-    """
-    Take a molecule, 'mol', and return the indices of all symmetry equivalent atoms.
+    """Take a molecule, 'mol', and return the indices of all symmetry equivalent atoms.
+
     The implemented function is based on finding duplicates in the (sorted) distance matrix,
     as symmetry equivalent atoms have identical inter-atomic distances.
 
@@ -32,6 +32,7 @@ def find_equivalent_atoms(mol, idx=None, idx_substract=0):
     -------
     list
         A list with tuples of symmetry equivalent atomic indices.
+
     """
     # Convert a PLAMS molecule to an array
     if isinstance(mol, Molecule):
@@ -53,7 +54,7 @@ def find_equivalent_atoms(mol, idx=None, idx_substract=0):
 
 
 def reset_origin(mol, at1):
-    """ Reset the origin of a molecule by means of translations and rotations.
+    """Reset the origin of a molecule by means of translations and rotations.
 
     Parameters
     ----------
@@ -66,6 +67,7 @@ def reset_origin(mol, at1):
     -------
     |plams.Molecule|
         The rotated and translated PLAMS molecule
+
     """
     if isinstance(mol, Molecule):
         mol = mol.as_array()
@@ -83,14 +85,15 @@ def reset_origin(mol, at1):
 
 
 def get_rotmat_axis(rot_range, axis='x'):
-    """
-    Calculate the rotation matrix for rotating a vector along an axis.
+    """Calculate the rotation matrix for rotating a vector along an axis.
+
     A rotation matrix is constructed for each angle in **rot_range**.
 
     Parameters
     ----------
     rot_range : |np.ndarray|
         An array of rotations in radian.
+
     """
     ret = np.zeros((len(rot_range), 3, 3))
     ret[:, 0, 0] = ret[:, 1, 1] = ret[:, 2, 2] = np.ones(len(rot_range))
@@ -112,8 +115,8 @@ def get_rotmat_axis(rot_range, axis='x'):
 
 
 def supstitution_symmetry(mol):
-    """
-    Returns atomic symbols of substituted atoms (or first conection of non diatomic ligand)
+    """Returns atomic symbols of substituted atoms (or first conection of non diatomic ligand).
+
     Writes type of substitution symetry at the molecular properties
 
     Parameters
@@ -125,6 +128,7 @@ def supstitution_symmetry(mol):
     -------
     str
         Type of subsymmetry
+
     """
     dataframe, type_of_symetry = [], []
     ligand_identity = mol.properties.ligID
@@ -162,7 +166,7 @@ def supstitution_symmetry(mol):
 
 
 def get_symmetry(mol, decimals=2):
-    """ Returns the number of equivalent atoms under a number of symmetry operations.
+    """Return the number of equivalent atoms under a number of symmetry operations.
 
     Parameters
     ----------
@@ -175,8 +179,8 @@ def get_symmetry(mol, decimals=2):
     -------
     |pd.DataFrame|
         A Pandas dataframe with the number of equivalent atoms per axis per operation.
-    """
 
+    """
     if isinstance(mol, Molecule):
         mol = mol.as_array()
 
@@ -213,7 +217,7 @@ def get_symmetry(mol, decimals=2):
 
 
 def del_equiv_structures(mols, subsymmetry=None):
-    """ Returnes list of unique molecules based on subsymmetry
+    """Returne a list of unique molecules based on subsymmetry.
 
     Permutes list of ligands form plams_mol.properties.ligID for each molecule
     Molecules that have identical list of permutations are equivalent
@@ -229,16 +233,17 @@ def del_equiv_structures(mols, subsymmetry=None):
     -------
     list
         A list of unique molecule for specific subsymmetry
-        """
+
+    """
     notunique = []
 
     for mol in mols:
         if subsymmetry is None:
             subsymmetry = supstitution_symmetry(mol)
 
-        ligID = list(mol.properties.ligID)
+        lig_id = list(mol.properties.ligID)
 
-        all_permutations = symm_permutations(subsymmetry, ligID)
+        all_permutations = symm_permutations(subsymmetry, lig_id)
 
         notunique.append(all_permutations)
 
@@ -257,7 +262,7 @@ def del_equiv_structures(mols, subsymmetry=None):
 
 
 def symm_permutations(condition, elements):
-    """ For given list of elements, makes permutations taking in account symmetry condition
+    """For given list of elements, makes permutations taking in account symmetry condition.
 
     Parameters
     ----------
@@ -265,17 +270,20 @@ def symm_permutations(condition, elements):
         Type of subsymmetry
     elements : list
         A list of integers to be permuted
+
     """
 
     def swap_neighbours(j):
-        """ swaping neighbours inside a list: 1, 2, 3, 4 becomes 2, 1, 4, 3
+        """Swap neighbours inside a list: 1, 2, 3, 4 becomes 2, 1, 4, 3.
+
         <j>: a list
         """
         j[1::2], j[::2] = j[::2], j[1::2]
         return j
 
     def swap_pairs(j):
-        """ swaping pairs inside a list: 1,2,3,4 becomes 3,4,1,2
+        """Swap pairs inside a list: 1,2,3,4 becomes 3,4,1,2.
+
         <j>: a list
         """
         j[:2], j[2:] = j[2:], j[:2]

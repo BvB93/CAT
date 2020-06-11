@@ -1,8 +1,4 @@
-"""
-CAT.mol_utils
-=============
-
-A module with misc functions related to manipulating molecules and their geometry.
+"""A module with misc functions related to manipulating molecules and their geometry.
 
 Index
 -----
@@ -142,8 +138,7 @@ def get_index(self, value: Union[Atom, Bond]) -> Union[int, Tuple[int, int]]:
 
 @add_to_class(Molecule)
 def separate_mod(self) -> Tuple[Molecule]:
-    """Modified PLAMS function: creates new molecules out of this instance rather than
-    a copy of this instance. Atoms, bonds and properties are *not* copied.
+    """Modified PLAMS function: creates new molecules out of this instance rather than a copy of this instance. Atoms, bonds and properties are *not* copied.
 
     Separate the molecule into connected components.
     Returns is a list of new Molecule instrances (all atoms and bonds are disjoint with
@@ -157,7 +152,7 @@ def separate_mod(self) -> Tuple[Molecule]:
     |tuple|_ [|plams.Molecule|_]
         A list of molecules with atoms and bonds from **self**.
 
-    """
+    """  # noqa: E501
     frags = ()
     for at in self:
         at._visited = False
@@ -274,7 +269,6 @@ def to_symbol(value: Union[str, int, Atom]) -> str:
     try:
         return value.symbol
     except AttributeError as ex:
-        tb = ex.__traceback__
         raise TypeError("'value' expected an Atom or atomic symbol/number; "
                         f"observed type: '{value.__class__.__name__}'") from ex
 
@@ -343,7 +337,6 @@ def fix_carboxyl(mol: Molecule) -> None:
         A PLAMS molecule.
 
     """
-
     rdmol = molkit.to_rdmol(mol)
     conf = rdmol.GetConformer()
     matches = rdmol.GetSubstructMatches(_CARBOXYLATE)
@@ -369,7 +362,7 @@ def fix_h(mol: Molecule) -> None:
         A PLAMS molecule.
 
     """
-    H_list = [atom for atom in mol if atom.atnum == 1 and 2.0 in
+    h_list = [atom for atom in mol if atom.atnum == 1 and 2.0 in
               [bond.order for bond in mol.neighbors(atom)[0].bonds]]
 
     rdmol = molkit.to_rdmol(mol)
@@ -379,7 +372,7 @@ def fix_h(mol: Molecule) -> None:
     get_angle = rdMolTransforms.GetAngleDeg
 
     update = False
-    for atom in H_list:
+    for atom in h_list:
         at1 = atom  # Central atom
         at2 = mol.neighbors(at1)[0]  # Neighbours
         at3 = [atom for atom in mol.neighbors(at2) if atom != at1]  # Neighbours of neighbours

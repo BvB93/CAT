@@ -1,10 +1,5 @@
-"""
-CAT.data_handling.warn_map
-==========================
+"""A module for managing exceptions and warnings in CAT."""
 
-A module for managing exceptions and warnings in CAT.
-
-"""
 import warnings
 from types import MappingProxyType
 from typing import Mapping, Callable, NoReturn, Union, Type

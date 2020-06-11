@@ -1,0 +1,55 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Build with Conda
+
+on:
+    push:
+        branches:
+            - master
+    pull_request:
+
+jobs:
+    build:
+        name: Python ${{ matrix.version }} on ${{ matrix.os }}
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, macos-latest]
+                version: [3.6, 3.7, 3.8]
+
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Set up Conda with Python ${{ matrix.version }} on ${{ matrix.os }}
+              uses: s-weigand/setup-conda@v1
+              with:
+                update-conda: true
+                python-version: ${{ matrix.version }}
+                conda-channels: anaconda
+
+            - name: Install conda-based dependencies
+              run: conda install -c conda-forge h5py rdkit
+
+            - name: Install dependencies
+              run: pip install -e .[test]
+              env:
+                CONDA_PREFIX: /usr/share/miniconda
+
+            - name: Conda info
+              run: conda info
+
+            - name: Installed packages
+              run: conda list
+
+            - name: Run tests
+              run: pytest -m "not slow"
+              env:
+                CONDA_PREFIX: /usr/share/miniconda
+
+            - name: Run codecov
+              uses: codecov/codecov-action@v1
+              with:
+                file: ./coverage.xml
+                name: codecov-umbrella

@@ -1,13 +1,6 @@
-"""
-CAT.workflows.workflow_dicts
-============================
-
-A module for loading :class:`WorkFlow` templates.
-
-"""
+"""A module for loading :class:`WorkFlow` templates."""
 
 import os
-import sys
 from types import MappingProxyType
 from typing import Mapping, MutableMapping, Tuple, Dict, Any, TYPE_CHECKING
 

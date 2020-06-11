@@ -1,22 +1,19 @@
-"""
-CAT.recipes
-===========
-
-A number of recipes constructed using the CAT and Nano-CAT packages.
+"""A number of recipes constructed using the CAT and Nano-CAT packages.
 
 Examples
 --------
 .. code:: python
 
-    >>> from CAT.recipes import bulk_workflow
-    >>> from CAT.recipes import replace_surface
-    >>> from CAT.recipes import dissociate_surface, row_accumulator
-    >>> from CAT.recipes import coordination_number
+    >>> from CAT.recipes import bulk_workflow  # doctest: +SKIP
+    >>> from CAT.recipes import replace_surface  # doctest: +SKIP
+    >>> from CAT.recipes import dissociate_surface, row_accumulator  # doctest: +SKIP
+    >>> from CAT.recipes import coordination_number  # doctest: +SKIP
     >>> from CAT.recipes import add_ligands, export_dyes, sa_scores
-    >>> from CAT.recipes import mutli_ligand_job
     ...
 
 """
+
+# flake8: noqa: F403,F401
 
 try:
     from nanoCAT import recipes as _recipes

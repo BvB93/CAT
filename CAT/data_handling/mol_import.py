@@ -1,8 +1,4 @@
-"""
-CAT.data_handling.mol_import
-============================
-
-A module related to the importing of molecules.
+"""A module related to the importing of molecules.
 
 Index
 -----
@@ -244,7 +240,11 @@ def canonicalize_mol(mol: Molecule, inplace: bool = True) -> Optional[Molecule]:
     --------
     .. code:: python
 
-        >>> print(mol)  # Methane
+        >>> from scm.plams import Molecule, from_smiles
+
+        # Methane
+        >>> mol: Molecule = from_smiles('C')
+        >>> print(mol)  # doctest: +SKIP
         Atoms:
             1         H      0.640510      0.640510     -0.640510
             2         H      0.640510     -0.640510      0.640510
@@ -253,7 +253,7 @@ def canonicalize_mol(mol: Molecule, inplace: bool = True) -> Optional[Molecule]:
             5         H     -0.640510     -0.640510     -0.640510
 
         >>> canonicalize_mol(mol)
-        >>> print(mol)
+        >>> print(mol)  # doctest: +SKIP
         Atoms:
             1         C      0.000000      0.000000      0.000000
             2         H     -0.640510     -0.640510     -0.640510

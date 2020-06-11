@@ -1,8 +1,4 @@
-"""
-CAT.attachment.optimize_rotmat
-==============================
-
-A module for optimizing rottion matrices.
+"""A module for optimizing rottion matrices.
 
 Index
 -----

@@ -1,8 +1,4 @@
-"""
-CAT.workflows.key_map
-=====================
-
-A module for storing all column keys used throughout CAT.
+"""A module for storing all column keys used throughout CAT.
 
 Index
 -----

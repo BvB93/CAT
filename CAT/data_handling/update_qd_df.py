@@ -1,8 +1,4 @@
-"""
-CAT.data_handling.update_qd_df
-==============================
-
-A module for updating the index of quantum dot dataframes.
+"""A module for updating the index of quantum dot dataframes.
 
 Index
 -----

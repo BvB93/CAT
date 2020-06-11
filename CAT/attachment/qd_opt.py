@@ -1,8 +1,4 @@
-"""
-CAT.attachment.qd_opt
-=====================
-
-A module designed for optimizing the combined ligand & core.
+"""A module designed for optimizing the combined ligand & core.
 
 Index
 -----
@@ -29,9 +25,9 @@ from typing import Tuple, Iterable, Optional, Type, NoReturn, Any
 from scm.plams import Molecule, Settings, AMSJob
 from scm.plams.core.basejob import Job
 
-from ..jobs import job_geometry_opt
+from ..jobs import job_geometry_opt  # noqa: F401
 from ..workflows import WorkFlow, MOL, JOB_SETTINGS_QD_OPT
-from ..mol_utils import fix_carboxyl, fix_h, round_coords
+from ..mol_utils import fix_carboxyl, fix_h
 from ..settings_dataframe import SettingsDataFrame
 from ..data_handling.mol_to_file import mol_to_file
 

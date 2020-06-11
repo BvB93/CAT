@@ -1,9 +1,5 @@
 
-"""
-CAT.data_handling.str_to_func
-=============================
-
-A module for creating new functions from a strings.
+"""A module for creating new functions from a strings.
 
 Index
 -----
@@ -55,14 +51,14 @@ def str_to_func(func_str: Union[Callable[[np.ndarray], np.ndarray], str],
 def compile_func(func_str: str) -> FunctionType:
     """Compile **func_str** into a :class:`code<types.CodeType>` instance."""
     global_dict = {'np': np}
-    _x = np.array([[0.0, np.nan], [np.inf, 5.0]])
+    x = np.array([[0.0, np.nan], [np.inf, 5.0]])
 
     func_str = func_str.replace('numpy', 'np')
 
     # Load all module specified in **func_str**
     while True:
         try:
-            x = _x.copy()
+            x.copy()
             exec(func_str)
         except NameError as ex:
             module = str(ex).split("'")[1]
@@ -82,7 +78,7 @@ def compile_func(func_str: str) -> FunctionType:
         if isinstance(code, CodeType):
             break
     else:
-        raise ValueError(f"Failed to find 'code' instance in 'code_compile.co_consts'")
+        raise ValueError("Failed to find 'code' instance in 'code_compile.co_consts'")
 
     # Construct and return the new function
     func = FunctionType(code, globals=global_dict, name='weight')

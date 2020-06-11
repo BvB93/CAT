@@ -1,8 +1,4 @@
-"""
-CAT.data_handling.validation_schemas
-====================================
-
-A module designed for sanitizing and interpreting the input file.
+"""A module designed for sanitizing and interpreting the input file.
 
 Index
 -----
@@ -993,7 +989,7 @@ cdft_schema: Schema = Schema({
         ),
 
     # The Job Settings for the final geometry optimization
-    Optional_('s2', default=Settings):
+    Optional_('s1', default=Settings):
         Or(
             None,
             dict,

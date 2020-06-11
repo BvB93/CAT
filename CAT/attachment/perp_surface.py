@@ -1,8 +1,4 @@
-"""
-CAT.attachment.perp_surface
-===========================
-
-A module for constructing vectors perpendicular to a molecules surface.
+"""A module for constructing vectors perpendicular to a molecules surface.
 
 Index
 -----

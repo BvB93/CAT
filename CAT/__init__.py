@@ -1,15 +1,4 @@
-"""
-CAT
-===
-
-A collection of tools designed for the construction of various chemical compounds.
-
-"""
-
-from scm.plams import (
-    Settings as _Settings,
-    add_to_class
-)
+"""**CAT**: A collection of tools designed for the construction of various chemical compounds."""  # noqa: E501
 
 from nanoutils import VersionInfo
 

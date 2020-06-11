@@ -1,8 +1,4 @@
-"""
-CAT.data_handling.mol_to_file
-=============================
-
-A module designed for exporting PLAMS :class:`Molecule` instances to common file formats.
+"""A module designed for exporting PLAMS :class:`Molecule` instances to common file formats.
 
 Index
 -----

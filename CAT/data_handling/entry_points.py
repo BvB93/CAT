@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-"""
-CAT.data_handling.input_parser
-==============================
-
-Entry point for CAT.
+"""Entry points for CAT.
 
 Index
 -----
@@ -48,6 +44,7 @@ def extract_args(args: Optional[List[str]] = None) -> Settings:
 
 
 def main(args: Optional[List[str]] = None) -> None:
+    """Launch CAT via the command line."""
     parser = argparse.ArgumentParser(
         prog='CAT',
         usage='init_cat my_settings_file.yaml',

@@ -1,1 +1,3 @@
-__version__ = '0.9.1'
+"""The **CAT** version."""
+
+__version__ = '0.9.4'

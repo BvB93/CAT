@@ -13,9 +13,11 @@ from ..logger import logger
 
 __all__ = ['label_lig', 'label_core', 'substitution', 'multi_substitution']
 
+# flake8: noqa: N806
+
 
 def ff_constrained_opt(mol, constrain=()):
-    """ Performs a constrained FF optimization on a PLAMS molecule
+    """Performs a constrained FF optimization on a PLAMS molecule.
 
     Optimisation with rdkit.Chem.AllChem.MMFFGetMoleculeForceField; a PLAMS molecule
     is converted to rdkit molecule, optimised with frozen atoms and converted back to
@@ -33,7 +35,8 @@ def ff_constrained_opt(mol, constrain=()):
     -------
     |plams.Molecule|
         Optimized molecular structure
-        """
+
+    """
     rdkit_mol = to_rdmol(mol)
     ff_type = AllChem.MMFFGetMoleculeForceField
 
@@ -55,7 +58,7 @@ def ff_constrained_opt(mol, constrain=()):
 
 
 def connect_ligands_to_core(lig_dict, core, user_min_dist):
-    """ Attaches multiple ligands to multiple copies of a single core.
+    """Attaches multiple ligands to multiple copies of a single core.
 
     Returns a list of cores with attached ligands, each with the properties.min_distance attribute
     containing the smallest distance between ligand and core.
@@ -77,8 +80,8 @@ def connect_ligands_to_core(lig_dict, core, user_min_dist):
     -------
     list of PLAMS molecules
         A list of new molecule that are made core with different ligands attached
-    """
 
+    """
     # Unpack the ligand dictionary
     lig_list = lig_dict['lig_list']
     lig_idx = lig_dict['lig_idx']
@@ -154,7 +157,7 @@ def connect_ligands_to_core(lig_dict, core, user_min_dist):
 
 
 def get_args(core, lig_list, lig_idx):
-    """ Extract the various arguments from core and ligand_list
+    """Extract the various arguments from core and ligand_list.
 
     Parameters
     ----------
@@ -169,8 +172,8 @@ def get_args(core, lig_list, lig_idx):
     -------
     dict
         A dictionary with properties needed for aligning ligand with the core
-    """
 
+    """
     # Extract the various arguments from core and ligand_list
     core_other_atom = core.properties.coords_other_atom[0]
     lig_other = [lig[lig.properties.idx_other+1] for lig in lig_list]
@@ -198,7 +201,7 @@ def get_args(core, lig_list, lig_idx):
 
 
 def label_core(mol):
-    """ Adds plams_mol.properties attribute to the core
+    """Adds plams_mol.properties attribute to the core.
 
     Reads the atom indices from comment section in core's .xyz file and adds
     additional plams_mol.properties: coordinates of atom that will be substituted,
@@ -238,7 +241,7 @@ def label_core(mol):
 
 
 def label_lig(mols):
-    """Adds plams_mol.properties attribute to the ligand
+    """Adds plams_mol.properties attribute to the ligand.
 
     Reads the atom index from comment section in ligand's .xyz file and adds additional
     plams_mol.properties: coordinates of atom that will be substituted; bond vector between
@@ -254,6 +257,7 @@ def label_lig(mols):
     -------
     mol : |plams.Molecule|
         A PLAMS mol with additional plams_mol.properties
+
     """
     ligID = list(range(len(mols)))
 
@@ -278,7 +282,7 @@ def label_lig(mols):
 
 
 def substitution(input_ligands, input_cores, min_dist):
-    """ Substitutes atoms at the core with ligands
+    """Substitutes atoms at the core with ligands.
 
     Parameters
     ----------
@@ -305,7 +309,7 @@ def substitution(input_ligands, input_cores, min_dist):
 
 
 def multi_substitution(input_ligands, input_cores, n=1):
-    """ Attach ligands to cores; repeat this process n times. """
+    """Attach ligands to cores; repeat this process n times."""
     ret = []
     mol_list = input_cores
     for _ in range(n):

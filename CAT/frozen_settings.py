@@ -1,8 +1,4 @@
-"""
-CAT.frozen_settings
-===================
-
-A module which adds the :class:`.FrozenSettings` class, an immutable counterpart to plams.Settings_.
+"""A module which adds the :class:`.FrozenSettings` class, an immutable counterpart to plams.Settings_.
 
 .. _plams.Settings: https://www.scm.com/doc/plams/components/settings.html
 
@@ -19,7 +15,7 @@ API
     :private-members:
     :special-members:
 
-"""
+"""  # noqa: E501
 
 import copy
 import textwrap
@@ -66,9 +62,11 @@ class FrozenSettings(Settings):
     __repr__ = __str__
 
     def __missing__(self, key: Hashable) -> 'FrozenSettings':
+        """Return :data:`_frozen_settings`."""
         return _frozen_settings
 
     def __bool__(self) -> bool:
+        """Implement :class:`bool(self)<bool>`."""
         return bool(len(self))
 
     @classmethod
@@ -79,14 +77,25 @@ class FrozenSettings(Settings):
     __delitem__ = __setitem__ = set_nested = _raise_exc
 
     def flatten(self, flatten_list: bool = True) -> 'FrozenSettings':
+        """Return a flattened copy of this instance.
+
+        New keys are constructed by concatenating the (nested) keys of this instance into tuples.
+        Opposite of the :meth:`.Settings.unflatten` method.
+        If *flatten_list* is ``True``, all nested lists will be flattened as well. Dictionary keys are replaced with list indices in such case.
+
+        """  # noqa: E501
         ret = super().flatten(flatten_list)
         return type(self)(ret)
-    flatten.__doc__ = Settings.flatten.__doc__
 
     def unflatten(self, unflatten_list: bool = True) -> 'FrozenSettings':
+        """Return a nested copy of this instance.
+
+        New keys are constructed by expanding the keys of this instance (*e.g.* tuples) into new nested |Settings| instances.
+        If *unflatten_list* is ``True``, integers will be interpretted as list indices and are used for creating nested lists.
+        Opposite of the :meth:`.flatten` method.
+        """  # noqa: E501
         ret = super().unflatten(unflatten_list)
         return type(self)(ret)
-    unflatten.__doc__ = Settings.unflatten.__doc__
 
     def __hash__(self) -> int:
         """Return the hash of this instance; pull it from :attr:`._hash` if possible."""

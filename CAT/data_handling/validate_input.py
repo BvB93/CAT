@@ -1,8 +1,4 @@
-"""
-CAT.data_handling.validate_input
-================================
-
-A module designed for sanitizing and interpreting the input file.
+"""A module designed for sanitizing and interpreting the input file.
 
 Index
 -----
@@ -19,7 +15,7 @@ API
 from os import mkdir
 from os.path import (join, isdir)
 
-from scm.plams import Settings, AMSJob
+from scm.plams import Settings
 
 from .validation_schemas import (
     core_schema,

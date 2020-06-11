@@ -1,10 +1,4 @@
-"""
-CAT.attachment
-==============
-
-Modules designed for attaching ligands to cores.
-
-"""
+"""Modules designed for attaching ligands to cores."""
 
 from .qd_opt import init_qd_opt
 from .ligand_opt import init_ligand_opt

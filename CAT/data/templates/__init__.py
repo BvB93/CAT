@@ -1,7 +1,1 @@
-"""
-CAT.data.templates
-==================
-
-Various .yaml templates.
-
-"""
+"""Various .yaml templates."""

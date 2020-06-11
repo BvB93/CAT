@@ -1,8 +1,4 @@
-"""
-CAT.gen_job_manager
-===================
-
-A module to hold the :class:`GenJobManager` class.
+"""A module to hold the :class:`GenJobManager` class.
 
 Index
 -----

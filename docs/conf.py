@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '2.0'  # 2.0 or higher
+needs_sphinx = '2.1'
 
 
 # Output is processed with HTML4 writer.
@@ -42,9 +42,15 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
-    'sphinx.ext.napoleon',
-    'sphinx_autodoc_typehints'
+    'sphinx.ext.napoleon'
 ]
+
+
+# This value controls how to represents typehints. The setting takes the following values:
+#     'signature' – Show typehints as its signature (default)
+#     'none' – Do not show typehints
+# New in version 2.1.
+autodoc_typehints = 'none'
 
 
 # Add any paths that contain templates here, relative to this directory.
@@ -62,14 +68,14 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'CAT'
-year = str(datetime.datetime.now().year)
+_year = str(datetime.datetime.now().year)
 author = 'B. F. van Beek & J. Belic'
-copyright = f'{year}, {author}'
+copyright = f'{_year}, {author}'
 
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the built documents.
-release = '0.9.1'  # The full version, including alpha/beta/rc tags.
+release = '0.9.4'  # The full version, including alpha/beta/rc tags.
 version = release.rsplit('.', maxsplit=1)[0]
 
 
@@ -197,14 +203,15 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/', None),
+    'python': ('https://docs.python.org/3/', None),
     'h5py': ('https://docs.h5py.org/en/latest/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
     'plams': ('https://www.scm.com/doc/plams/', None),
     'qmflows': ('https://qmflows.readthedocs.io/en/latest/', None),
     'FOX': ('https://auto-fox.readthedocs.io/en/latest/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None)
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'pymongo': ('https://pymongo.readthedocs.io/en/stable/', None)
 }
 
 

@@ -1,8 +1,4 @@
-"""
-CAT.attachment.distribution
-===========================
-
-Functions for creating distributions of atomic indices (*i.e.* core anchor atoms).
+"""Functions for creating distributions of atomic indices (*i.e.* core anchor atoms).
 
 Index
 -----
@@ -345,11 +341,9 @@ def _parse_randomness(randomness: float, arg_func: Callable[[np.ndarray], int],
     try:
         assert (0 <= randomness <= 1)
     except TypeError as ex:
-        tb = ex.__traceback__
         raise TypeError("'randomness' expected a float larger than 0.0 and smaller than 1.0; "
                         f"observed type: '{randomness.__class__.__name__}'") from ex
     except AssertionError as ex:
-        tb = ex.__traceback__
         raise ValueError("'randomness' expected a float larger than 0.0 and smaller than 1.0; "
                          f"observed value: {reprlib.repr(randomness)}") from ex
 

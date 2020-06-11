@@ -1,6 +1,4 @@
-"""
-CAT.logger
-==========
+"""The CAT logger.
 
 Index
 -----
@@ -23,7 +21,7 @@ from scm.plams.core.basejob import Job
 __all__ = ['logger']
 
 #: A logger for CAT
-logger = logging.getLogger()
+logger = logging.getLogger('CAT')
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(asctime)s] %(levelname)s: %(message)s',
                     datefmt='%H:%M:%S')

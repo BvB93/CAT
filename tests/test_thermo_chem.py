@@ -17,13 +17,13 @@ FREQ = np.load(join(PATH, 'freq.npy'))  # cm**-1
 def test_get_entropy() -> None:
     """Tests for :func:`CAT.thermo_chem.get_entropy`."""
     ref1 = np.array([143.78052972, 81.90558458, 2308.88449109])
-    S1 = get_entropy(MOL, FREQ)
-    np.testing.assert_allclose(ref1, S1)
+    s1 = get_entropy(MOL, FREQ)
+    np.testing.assert_allclose(ref1, s1)
 
     # Test with a different temperature
     ref2 = np.array([149.8889032, 85.57060867, 2338.20467688])
-    S2 = get_entropy(MOL, FREQ, T=400)
-    np.testing.assert_allclose(ref2, S2)
+    s2 = get_entropy(MOL, FREQ, T=400)
+    np.testing.assert_allclose(ref2, s2)
 
 
 def test_get_thermo() -> None:
@@ -68,6 +68,6 @@ def test_get_thermo() -> None:
 
     # Test when exporting a single quantity
     ref5 = 14.678634916523373
-    G = get_thermo(MOL, FREQ, export='G')
-    i, j = round(G, 8), round(ref5, 8)
+    g = get_thermo(MOL, FREQ, export='G')
+    i, j = round(g, 8), round(ref5, 8)
     assertion.eq(i, j)

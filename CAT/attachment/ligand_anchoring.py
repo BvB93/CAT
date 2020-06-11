@@ -1,8 +1,4 @@
-"""
-CAT.attachment.ligand_anchoring
-===============================
-
-A module designed for finding ligand functional groups.
+"""A module designed for finding ligand functional groups.
 
 Index
 -----
@@ -38,7 +34,7 @@ from rdkit import Chem
 
 from ..logger import logger
 from ..utils import get_template
-from ..mol_utils import separate_mod
+from ..mol_utils import separate_mod   # noqa: F401
 from ..workflows import MOL, FORMULA, HDF5_INDEX, OPT
 from ..settings_dataframe import SettingsDataFrame
 from ..data_handling.validate_mol import santize_smiles

@@ -1,8 +1,4 @@
-"""
-CAT.attachment.edge_distance
-============================
-
-Functions for creating distance matrices from
+"""Functions for creating distance matrices.
 
 Index
 -----

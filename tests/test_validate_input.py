@@ -2,6 +2,7 @@
 
 import os
 from os.path import join
+from pathlib import Path
 from shutil import rmtree
 
 import yaml
@@ -10,15 +11,20 @@ from unittest import mock
 from rdkit import Chem
 from scm.plams import (Settings, AMSJob)
 from assertionlib import assertion
+from nanoutils import delete_finally
 
 from CAT.data_handling.validate_input import validate_input
 from dataCAT import Database
 
-PATH = join('tests', 'test_files')
+PATH = Path('tests') / 'test_files'
+LIG_PATH = PATH / 'ligand'
+QD_PATH = PATH / 'qd'
+DB_PATH = PATH / 'database'
 
 
 @mock.patch.dict(os.environ,
                  {'ADFBIN': 'a', 'ADFHOME': '2019', 'ADFRESOURCES': 'b', 'SCMLICENSE': 'c'})
+@delete_finally(LIG_PATH, QD_PATH, DB_PATH)
 def test_validate_input() -> None:
     """Test :func:`CAT.data_handling.validate_input.validate_input`."""
     with open(join(PATH, 'input1.yaml'), 'r') as f:

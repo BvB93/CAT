@@ -26,3 +26,4 @@ look into the customization of the various jobs.
     _2_distribution_brute
     _3_distribution
     _4_guess_core_core_dist
+    8_import_qd.rst

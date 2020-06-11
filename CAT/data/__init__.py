@@ -1,7 +1,1 @@
-"""
-CAT.data
-========
-
-Various templates, dictionaries and .coskf files.
-
-"""
+"""Various templates, dictionaries and .coskf files."""

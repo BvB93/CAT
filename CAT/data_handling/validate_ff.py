@@ -1,8 +1,4 @@
-"""
-CAT.data_handling.validate_ff
-=============================
-
-A module designed for sanitizing and validating the ``["optional"]["forcefield"]`` input block.
+"""A module designed for sanitizing and validating the ``["optional"]["forcefield"]`` input block.
 
 Index
 -----
@@ -14,7 +10,7 @@ API
 ---
 .. autofunction:: validate_ff
 
-"""
+"""  # noqa: E501
 
 import reprlib
 from typing import Union, Any, Mapping, TypeVar, Optional
@@ -91,10 +87,12 @@ def validate_ff(s: M) -> Union[M, bool]:
 
 
 def assertion_msg(obj: Any) -> str:
+    """Return a formatted string."""
     return f'<type {repr(obj.__class__.__name__)}: {reprlib.repr(obj)}>'
 
 
 def update_ff_jobs(s: Settings) -> None:
+    """Update forcefield settings."""
     if NANO_CAT is not None:
         raise NANO_CAT
 

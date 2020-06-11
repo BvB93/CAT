@@ -1,8 +1,4 @@
-"""
-CAT.attachment.as_array
-=======================
-
-A context manager for temporary interconverting between PLAMS molecules and NumPy arrays.
+"""A context manager for temporary interconverting between PLAMS molecules and NumPy arrays.
 
 Index
 -----
@@ -46,19 +42,21 @@ class AsArray(AbstractContextManager):
         >>> mol.add_atom(h1)
         >>> mol.add_atom(h2)
 
-        >>> print(mol)
+        >>> print(mol)  # doctest: +SKIP
           Atoms:
             1         H      0.000000      0.000000      0.000000
             2         H      1.000000      0.000000      0.000000
+        <BLANKLINE>
 
         # Example: Translate the molecule along the Cartesian Z-axis by 5 Angstroem
         >>> with AsArray(mol) as xyz:
         ...     xyz[:, 2] += 5
 
-        >>> print(mol)
+        >>> print(mol)  # doctest: +SKIP
           Atoms:
             1         H      0.000000      0.000000      5.000000
             2         H      1.000000      0.000000      5.000000
+        <BLANKLINE>
 
     Parameters
     ----------
@@ -78,7 +76,9 @@ class AsArray(AbstractContextManager):
     """
 
     @property
-    def mol(self) -> Union[Molecule, Sequence[Atom]]: return self._mol
+    def mol(self) -> Union[Molecule, Sequence[Atom]]:
+        """Get or set the embedded molecule."""
+        return self._mol
 
     @mol.setter
     def mol(self, value: Iterable[Atom]) -> None:

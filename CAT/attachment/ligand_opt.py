@@ -1,8 +1,4 @@
-"""
-CAT.attachment.ligand_opt
-=========================
-
-A module designed for optimizing the geometry of ligands.
+"""A module designed for optimizing the geometry of ligands.
 
 Index
 -----
@@ -55,7 +51,7 @@ from ..workflows import WorkFlow, MOL
 from ..mol_utils import fix_carboxyl, to_atnum
 from ..settings_dataframe import SettingsDataFrame
 from ..data_handling.mol_to_file import mol_to_file
-from ..jobs import job_geometry_opt
+from ..jobs import job_geometry_opt  # noqa: F401
 
 __all__ = ['init_ligand_opt']
 

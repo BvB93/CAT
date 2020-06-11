@@ -1,3 +1,18 @@
+"""A module for holding the :class:`WorkFlow` class.
+
+Index
+-----
+.. currentmodule:: CAT.workflows.workflow
+.. autosummary::
+    WorkFlow
+
+API
+---
+.. autoclass:: WorkFlow
+    :members:
+
+"""
+
 import os
 import operator
 from shutil import rmtree
@@ -5,7 +20,7 @@ from pathlib import Path
 from contextlib import AbstractContextManager
 from typing import (
     Optional, Union, Dict, Hashable, MutableMapping, TypeVar, Iterable, Container, Tuple, Callable,
-    Any, List, Type, Mapping
+    Any, List, Type, Mapping, TYPE_CHECKING
 )
 
 import numpy as np
@@ -13,7 +28,7 @@ import pandas as pd
 
 import rdkit
 import qmflows
-from rdkit.Chem.AllChem import UFFGetMoleculeForceField as UFF
+from rdkit.Chem.AllChem import UFFGetMoleculeForceField as UFF  # noqa: N814
 from scm.plams import finish, Settings, Molecule
 from scm.plams.core.basejob import Job
 from assertionlib.dataclass import AbstractDataClass
@@ -24,13 +39,16 @@ from ..utils import restart_init, JOB_MAP
 from ..logger import logger
 from ..settings_dataframe import SettingsDataFrame
 
+if TYPE_CHECKING:
+    from dataCAT import Database
+
 __all__ = ['WorkFlow']
 
 T = TypeVar('T')
 
 
-def _return_True(value: Any) -> bool:
-    """Return ``True``."""
+def _return_true(value: object) -> bool:
+    """Return :data:`True`."""
     return True
 
 
@@ -40,7 +58,7 @@ def _lt_0(value) -> int:
 
 
 def pop_and_concatenate(mapping: MutableMapping[Hashable, T], base_key: Hashable,
-                        filter_func: Callable[[Any], bool] = _return_True) -> Tuple[T, ...]:
+                        filter_func: Callable[[Any], bool] = _return_true) -> Tuple[T, ...]:
     """Take a key and :meth:`pop<dict.pop>` all values from **mapping**.
 
     The popping will continue as long as :code:`base_key + str(i)` is available in the mapping,
@@ -51,6 +69,8 @@ def pop_and_concatenate(mapping: MutableMapping[Hashable, T], base_key: Hashable
     --------
     .. code:: python
 
+        >>> from CAT.workflows.workflow import pop_and_concatenate
+
         >>> mapping: dict = {
         ...     'job1': 1,
         ...     'job2': 2,
@@ -58,8 +78,8 @@ def pop_and_concatenate(mapping: MutableMapping[Hashable, T], base_key: Hashable
         ...     'final_key': True
         ... }
 
-        >>> base_key: str = 'job'
-        >>> value_tuple: tuple = concatenate_values(mapping, base_key)
+        >>> base_key = 'job'
+        >>> value_tuple: tuple = pop_and_concatenate(mapping, base_key)
         >>> print(value_tuple)
         (1, 2, 3)
 
@@ -113,15 +133,16 @@ class WorkFlow(AbstractDataClass):
 
         >>> import pandas as pd
 
-        >>> # Prepare workflow parameters
-        >>> df = pd.DataFrame(...)
-        >>> settings = Settings(...)
+        # Prepare workflow parameters
+        >>> df = pd.DataFrame(...)  # doctest: +SKIP
+        >>> settings = Settings()
+
         >>> def fancy_df_func(df, **kwargs):
         ...     pass
 
-        >>> # Create the workflow
-        >>> workflow = WorkFlow.from_template(settings, name='asa')
-        >>> print(workflow)
+        # Create the workflow
+        >>> workflow = WorkFlow.from_template(settings, name='asa')  # doctest: +SKIP
+        >>> print(workflow)  # doctest: +SKIP
         WorkFlow(
             name       = 'asa',
             db         = None,
@@ -134,13 +155,13 @@ class WorkFlow(AbstractDataClass):
             settings   = None
         )
 
-        >>> # Run the workflow
-        >>> idx = workflow.from_db(df)
-        >>> workflow(fancy_df_func, df, index=idx)
+        # Run the workflow
+        >>> idx = workflow.from_db(df)  # doctest: +SKIP
+        >>> workflow(fancy_df_func, df, index=idx)  # doctest: +SKIP
 
-        >>> # Export all workflow results
-        >>> job_recipe = workflow.get_recipe()
-        >>> workflow.to_db(df, job_recip=job_recipe)
+        # Export all workflow results
+        >>> job_recipe = workflow.get_recipe()  # doctest: +SKIP
+        >>> workflow.to_db(df, job_recip=job_recipe)  # doctest: +SKIP
 
     """
 
@@ -586,6 +607,7 @@ class WorkFlow(AbstractDataClass):
             * ``Cp2kJob``
             * ``GamessJob``
             * ``ORCAJob``
+            * ``CRSJob``
 
         Parameters
         ----------

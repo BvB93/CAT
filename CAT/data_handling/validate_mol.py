@@ -1,8 +1,4 @@
-"""
-CAT.data_handling.validate_mol
-==============================
-
-A module designed for sanitizing and interpreting all molecule-related settings in the input file.
+"""A module designed for sanitizing and interpreting all molecule-related settings in the input file.
 
 Index
 -----
@@ -20,7 +16,7 @@ API
 .. autofunction:: _parse_name_type
 .. autofunction:: _parse_mol_type
 
-"""
+"""  # noqa: E501
 
 from os.path import join, isfile, isdir, basename
 from typing import Sequence, Any, Union, Optional
@@ -64,13 +60,13 @@ def validate_mol(args: Sequence[Union[Any, Settings]],
 
     .. code:: python
 
-        >>> print(args1)  # A list of .xyz files
-        ['mol1.xyz', 'mol2.xyz']
-
+        # A list of .xyz files
+        >>> args1 = ['mol1.xyz', 'mol2.xyz']
         >>> mol_type = 'input_ligands'
+
         >>> validate_mol(args1, mol_type)
 
-        >>> print(args1[0], '\n', args1[1])
+        >>> print(args1[0], '\n', args1[1])  # doctest: +SKIP
         is_core:        False
         mol:    /path/to/my/current/working/dir/mol1.xyz
         name:   mol1
@@ -88,7 +84,8 @@ def validate_mol(args: Sequence[Union[Any, Settings]],
 
     .. code :: python
 
-        >>> print(args2)  # A list of Settings instances with .xyz files
+        # A list of Settings instances with .xyz files
+        >>> print(args2)  # doctest: +SKIP
         [mol3.pdb:
              guess_bonds:       True
          mol4.pdb:
@@ -97,9 +94,9 @@ def validate_mol(args: Sequence[Union[Any, Settings]],
 
         >>> mol_type = 'input_ligands'
         >>> path = '/path/to/custom/working/dir'
-        >>> validate_mol(args2, mol_type, path)
+        >>> validate_mol(args2, mol_type, path)  # doctest: +SKIP
 
-        >>> print(args2[0], '\n', args2[1])
+        >>> print(args2[0], '\n', args2[1])  # doctest: +SKIP
         guess_bonds:    True
         is_core:        True
         mol:    /path/to/custom/working/dir/mol3.pdb

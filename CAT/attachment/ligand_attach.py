@@ -1,8 +1,4 @@
-"""
-CAT.attachment.ligand_attach
-============================
-
-A module designed for attaching ligands to cores.
+"""A module designed for attaching ligands to cores.
 
 Index
 -----
@@ -52,7 +48,7 @@ from scm.plams import Molecule, Atom, Settings, MoleculeError
 from assertionlib.ndrepr import aNDRepr
 
 from .perp_surface import get_surface_vec
-from ..mol_utils import get_index, round_coords
+from ..mol_utils import get_index, round_coords  # noqa: F401
 from ..workflows import WorkFlow, HDF5_INDEX, MOL, OPT
 from ..settings_dataframe import SettingsDataFrame
 from ..data_handling import mol_to_file, WARN_MAP
@@ -320,17 +316,17 @@ def _get_rotmat1(vec1: np.ndarray, vec2: np.ndarray) -> np.ndarray:
 
     v1, v2, v3 = np.cross(u_vec1, u_vec2).T
     v0 = np.zeros(max(len(u_vec1), len(u_vec2)))
-    M = np.array([[v0, -v3, v2],
+    m = np.array([[v0, -v3, v2],
                   [v3, v0, -v1],
                   [-v2, v1, v0]]).T
 
     with np.errstate(invalid='ignore'):
         if len(u_vec1) > 1 and len(u_vec2) > 1:
-            ret = np.identity(3) + M + ((M@M).T / (1 + u_vec2.T@u_vec1).T[..., None]).T
+            ret = np.identity(3) + m + ((m@m).T / (1 + u_vec2.T@u_vec1).T[..., None]).T
         elif len(u_vec1) == 1:
-            ret = np.identity(3) + M + ((M@M).T / (1 + u_vec2@u_vec1[0].T).T).T
+            ret = np.identity(3) + m + ((m@m).T / (1 + u_vec2@u_vec1[0].T).T).T
         elif len(u_vec2) == 1:
-            ret = np.identity(3) + M + ((M@M).T / (1 + u_vec2[0]@u_vec1.T).T).T
+            ret = np.identity(3) + m + ((m@m).T / (1 + u_vec2[0]@u_vec1.T).T).T
         else:
             raise ValueError('vec1 and vec2 expect 1- or 2-dimensional array-like objects; '
                              f'observed shapes: vec1: {np.asarray(vec1).shape} and vec2: '
@@ -364,7 +360,7 @@ def _get_rotmat2(vec: np.ndarray, step: float = (1/16)) -> np.ndarray:
 
     v1, v2, v3 = v.T
     zero = np.zeros(len(v))
-    W = np.array([[zero, -v3, v2],
+    w = np.array([[zero, -v3, v2],
                   [v3, zero, -v1],
                   [-v2, v1, zero]]).T
 
@@ -372,7 +368,7 @@ def _get_rotmat2(vec: np.ndarray, step: float = (1/16)) -> np.ndarray:
     a1 = np.sin(step_range)[:, None, None, None]
     a2 = (1 - np.cos(step_range))[:, None, None, None]
 
-    return np.identity(3) + a1 * W + a2 * W@W
+    return np.identity(3) + a1 * w + a2 * w@w
 
 
 def rot_mol(xyz_array: np.ndarray,

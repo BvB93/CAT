@@ -1,8 +1,4 @@
-"""
-CAT.attachment.distribution_brute
-=================================
-
-Functions for creating distributions of atomic indices using brute-force approaches.
+"""Functions for creating distributions of atomic indices using brute-force approaches.
 
 Index
 -----

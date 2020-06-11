@@ -1,8 +1,4 @@
-"""
-CAT.settings_dataframe
-======================
-
-A module for holding the :class:`.SettingsDataFrame` and :class:`.SettingsSeries` classes.
+"""A module for holding the :class:`.SettingsDataFrame` and :class:`.SettingsSeries` classes.
 
 Index
 -----

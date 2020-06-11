@@ -1,8 +1,4 @@
-"""
-CAT.attachment.distribution_utils
-=================================
-
-Utility functions related to the :mode:`distribution<CAT.attachment.distribution>` module.
+"""Utility functions related to the :mode:`distribution<CAT.attachment.distribution>` module.
 
 Index
 -----
@@ -40,15 +36,15 @@ def test_distribute(mol: Union[Molecule, str], symbol: str,
         >>> import numpy as np
         >>> from scm.plams import Molecule
 
-        >>> mol_input: Molecule = Molecule(...)
+        >>> mol_input = Molecule()
         >>> xyz_output: str = ...
-        >>> at_symbol: str = 'Cl'
-        >>> f_range: numpy.ndarray = 2**-np.arange(8.0)
+        >>> at_symbol = 'Cl'
+        >>> f_range: np.ndarray = 2**-np.arange(8.0)
 
-        >>> mol_out: Molecule = test_distribute(mol_input, at_symbol, f_range)
-        >>> mol_out.write(xyz_output)
+        >>> mol_out: Molecule = test_distribute(mol_input, at_symbol, f_range)  # doctest: +SKIP
+        >>> mol_out.write(xyz_output)  # doctest: +SKIP
 
-        >>> print(len(mol_input) == len(p_range) * len(mol_out))
+        >>> print(len(mol_input) == len(p_range) * len(mol_out))  # doctest: +SKIP
         True
 
     Parameters
