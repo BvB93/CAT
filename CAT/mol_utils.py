@@ -44,7 +44,7 @@ __all__ = ['adf_connectivity', 'fix_h', 'fix_carboxyl']
 try:
     SANITIZE: int = Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_ADJUSTHS
 except TypeError:  # This prevents Sphinx from raising a TypeError when rdkit is mocked
-    SANITIZE: int = 0
+    SANITIZE = 0
 
 
 @add_to_class(Molecule)

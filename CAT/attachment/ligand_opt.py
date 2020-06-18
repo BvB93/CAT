@@ -32,7 +32,8 @@ API
 
 import itertools
 from types import MappingProxyType
-from typing import List, Iterable, Union, Set, Optional, Type, Tuple, Mapping, Callable
+from typing import List, Iterable, Union, Set, Optional, Type, Tuple, Mapping, Callable, Sequence
+from collections import ChainMap
 
 import numpy as np
 
@@ -136,11 +137,13 @@ def _start_ligand_jobs_plams(ligand_list: Iterable[Molecule],
             optimize_ligand(ligand)
         except Exception as ex:
             logger.debug(f'{ex.__class__.__name__}: {ex}', exc_info=True)
+            ligand.properties.is_opt = False
+            continue
 
         s = Settings(settings)
         charge_func(s, int(sum(at.properties.get('charge', 0) for at in ligand)))
         ligand.job_geometry_opt(job, s, name='ligand_opt')
-        ligand.round_coords()
+        ligand.round_coords()  # `.is_opt = True` is set by `ligand.job_geometry_opt()``
     return None
 
 
@@ -151,10 +154,12 @@ def _start_ligand_jobs_uff(ligand_list: Iterable[Molecule]) -> None:
         try:
             optimize_ligand(ligand)
         except Exception as ex:
+            ligand.properties.is_opt = False
             logger.error(f'UFFGetMoleculeForceField: {ligand.properties.name} optimization '
                          'has failed')
             logger.debug(f'{ex.__class__.__name__}: {ex}', exc_info=True)
         else:
+            ligand.properties.is_opt = True
             logger.info(f'UFFGetMoleculeForceField: {ligand.properties.name} optimization '
                         'is successful')
     return None
@@ -166,9 +171,12 @@ def optimize_ligand(ligand: Molecule) -> None:
 
     # Split the branched ligand into linear fragments and optimize them individually
     bonds = split_mol(ligand, anchor)
-    with SplitMol(ligand, bonds) as mol_frags:
+    context = SplitMol(ligand, bonds)
+    with context as mol_frags:
+        cap_dict = ChainMap(*context._at_pairs)
         for mol in mol_frags:
-            mol.set_dihed(180.0, anchor)
+            cap_list = [cap for at, cap in cap_dict.items() if at in mol]
+            mol.set_dihed(180.0, anchor, cap_list)
 
     # Find the optimal dihedrals angle between the fragments
     for bond in bonds:
@@ -290,8 +298,8 @@ def get_frag_size(self, bond: Bond, anchor: Atom) -> int:
     def dfs(at1: Atom, atom_set: Set[Atom]):
         at1._visited = True
         atom_set.add(at1)
-        for bond in at1.bonds:
-            at2 = bond.other_end(at1)
+        for at2 in at1.neighbors():
+
             if at2._visited:
                 continue
             dfs(at2, atom_set)
@@ -372,7 +380,8 @@ def neighbors_mod(self, atom: Atom, exclude: Union[int, str] = 1) -> List[Atom]:
 
 
 @add_to_class(Molecule)
-def set_dihed(self, angle: float, anchor: Atom, opt: bool = True, unit: str = 'degree') -> None:
+def set_dihed(self, angle: float, anchor: Atom, cap: Sequence[Atom],
+              opt: bool = True, unit: str = 'degree') -> None:
     """Change all valid dihedral angles into a specific value.
 
     Performs an inplace update of this instance.
@@ -392,29 +401,54 @@ def set_dihed(self, angle: float, anchor: Atom, opt: bool = True, unit: str = 'd
         The input unit.
 
     """
-    angle = Units.convert(angle, unit, 'degree')
-    bond_list = [bond for bond in self.bonds if bond.atom1.atnum != 1 and bond.atom2.atnum != 1
-                 and bond.order == 1 and not self.in_ring(bond)]
+    cap_atnum = []
+    for at in cap:
+        cap_atnum.append(at.atnum)
+        at.atnum = 0
 
-    for bond in bond_list:
+    angle = Units.convert(angle, unit, 'degree')
+    bond_iter = (bond for bond in self.bonds if bond.atom1.atnum != 1 and bond.atom2.atnum != 1
+                 and bond.order == 1 and not self.in_ring(bond))
+
+    # Correction factor for, most importantly, tri-valent anchors (e.g. P(R)(R)R)
+    dihed_cor = angle / 2
+    neighbors = anchor.neighbors()
+    if len(neighbors) > 2:
+        atom_list = [anchor] + sorted(neighbors, key=lambda at: -at.atnum)[:3]
+        improper = get_dihed(atom_list)
+        dihed_cor *= np.sign(improper)
+
+    for bond in bond_iter:
+        # Gather lists of all non-hydrogen neighbors
         n1, n2 = self.neighbors_mod(bond.atom1), self.neighbors_mod(bond.atom2)
-        n1 = [atom for atom in n1 if atom != bond.atom2]
-        n2 = [atom for atom in n2 if atom != bond.atom1]
+
+        # Remove all atoms in `bond`
+        n1 = [atom for atom in n1 if atom is not bond.atom2]
+        n2 = [atom for atom in n2 if atom is not bond.atom1]
+
+        # Remove all non-subsituted atoms
+        # A special case consists of anchor atoms; they can stay
         if len(n1) > 1:
             n1 = [atom for atom in n1 if (len(self.neighbors_mod(atom)) > 1 or atom is anchor)]
         if len(n2) > 1:
             n2 = [atom for atom in n2 if (len(self.neighbors_mod(atom)) > 1 or atom is anchor)]
 
+        # Set `bond` in an anti-periplanar conformation
         if n1 and n2:
             dihed = get_dihed((n1[0], bond.atom1, bond.atom2, n2[0]))
             if anchor not in bond:
                 self.rotate_bond(bond, bond.atom1, angle - dihed, unit='degree')
             else:
+                dihed -= dihed_cor
                 self.rotate_bond(bond, bond.atom1, -dihed, unit='degree')
+                dihed_cor *= -1
+
+    for at, atnum in zip(cap, cap_atnum):
+        at.atnum = atnum
 
     if opt:
         rdmol = molkit.to_rdmol(self)
-        AllChem.UFFGetMoleculeForceField(rdmol).Minimize()
+        UFF(rdmol).Minimize()
         self.from_rdmol(rdmol)
 
 
@@ -427,8 +461,9 @@ def rdmol_as_array(rdmol: rdkit.Chem.Mol) -> np.ndarray:
     conf = rdmol.GetConformer(id=-1)
     atoms = rdmol.GetAtoms()
 
-    count = len(atoms)
-    shape = count, 3
+    atom_count = len(atoms)
+    count = 3 * atom_count
+    shape = atom_count, 3
 
     iterator = itertools.chain.from_iterable(get_xyz(at) for at in atoms)
     ret = np.fromiter(iterator, count=count, dtype=float)
@@ -484,14 +519,13 @@ def modified_minimum_scan_rdkit(ligand: Molecule, bond_tuple: Tuple[int, int],
         bond = mol[bond_tuple]
         atom = mol[bond_tuple[0]]
         mol.rotate_bond(bond, atom, angle, unit='degree')
-    mol_list = [molkit.to_rdmol(mol, properties=False) for mol in mol_list]
+    rdmol_list = [molkit.to_rdmol(mol, properties=False) for mol in mol_list]
 
     # Optimize the (constrained) geometry for all dihedral angles in angle_list
     # The geometry that yields the minimum energy is returned
-    uff = AllChem.UFFGetMoleculeForceField
     fixed = _find_idx(mol, bond)
-    for rdmol in mol_list:
-        ff = uff(rdmol)
+    for rdmol in rdmol_list:
+        ff = UFF(rdmol)
         for f in fixed:
             ff.AddFixedPoint(f)
         ff.Minimize()
@@ -503,7 +537,7 @@ def modified_minimum_scan_rdkit(ligand: Molecule, bond_tuple: Tuple[int, int],
     except ValueError:
         i = -1  # Default to the origin as anchor
 
-    for rdmol in mol_list:
+    for rdmol in rdmol_list:
         xyz = rdmol_as_array(rdmol)
         if i == -1:  # Default to the origin as anchor
             xyz = np.vstack([xyz, [0, 0, 0]])
@@ -514,7 +548,7 @@ def modified_minimum_scan_rdkit(ligand: Molecule, bond_tuple: Tuple[int, int],
         cost_list.append(cost)
 
     # Perform an unconstrained optimization on the best geometry and update the geometry of ligand
-    i = np.argmin(cost_list)
-    rdmol_best = mol_list[i]
-    uff(rdmol).Minimize()
+    j = np.argmin(cost_list)
+    rdmol_best = rdmol_list[j]
+    UFF(rdmol).Minimize()
     ligand.from_rdmol(rdmol_best)

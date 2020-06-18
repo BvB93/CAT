@@ -25,5 +25,5 @@ def test_multi_ligand() -> None:
     base.prep(SETTINGS.copy())
     pdb = PATH / 'qd' / 'Br25Cd360Cl25F25I27Se309__25_CCCC[O-]@O5__50_CCCCCCCCCCCCC[O-]@O14__77_C[O-]@O2.pdb'  # noqa
     with open(pdb, 'r') as f1, open(PDB_REF, 'r') as f2:
-        for i, j in zip(f1, f2):
-            assertion.eq(i, j)
+        for i, (line1, line2) in enumerate(zip(f1, f2), 1):
+            assertion.eq(line1, line2, message=f'atom {i}')

@@ -30,7 +30,7 @@ jobs:
                 conda-channels: anaconda
 
             - name: Install conda-based dependencies
-              run: conda install -c conda-forge h5py rdkit
+              run: conda install -c conda-forge h5py rdkit=2019.09.2
 
             - name: Install dependencies
               run: pip install -e .[test]

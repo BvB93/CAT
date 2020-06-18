@@ -205,7 +205,9 @@ def validate_core_atom(atom):  # noqa: E302
     return mol
 
 
-def restart_init(path: str, folder: str, hashing: str = 'input') -> None:
+def restart_init(path: Union[str, 'os.PathLike[str]'],
+                 folder: Union[str, 'os.PathLike[str]'],
+                 hashing: str = 'input') -> None:
     """Wrapper around the plams.init_ function; used for importing one or more previous jobs.
 
     All pickled .dill files in **path**/**folder**/ will be loaded into the

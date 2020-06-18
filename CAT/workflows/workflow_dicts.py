@@ -55,7 +55,7 @@ if TYPE_CHECKING:
         export_columns: Tuple[Tuple[str, str], ...]
 
 else:
-    from typing import Mapping as _TemplateMapping
+    _TemplateMapping = 'CAT.workflows.workflow_dicts._TemplateMapping'
 
 __all__ = ['WORKFLOW_TEMPLATE']
 

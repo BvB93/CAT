@@ -72,7 +72,7 @@ def init_ligand_anchoring(ligand_df: SettingsDataFrame) -> SettingsDataFrame:
 
         # Manual specification of a functional group
         if len(dummies) == 1:  # optional.ligand.split = False
-            lig.properties.dummies = dummies[0] - 1
+            lig.properties.dummies = (dummies[0] - 1,)
             _split = False
         elif len(dummies) == 2:  # optional.ligand.split = True
             lig.properties.dummies = tuple(i - 1 for i in dummies)
@@ -259,13 +259,13 @@ def substructure_split(ligand: Molecule,
             break
 
         # Check if the ligand heteroatom has a charge assigned, assigns a charge if not
-        if not at1.properties.charge or at1.properties.charge == 0:
+        if not at1.properties.charge:
             at1.properties.charge = -1
 
     # Update ligand properties
     lig.properties.dummies = at1
     lig.properties.anchor = at1.symbol + str(lig.atoms.index(at1) + 1)
-    lig.properties.charge = sum(atom.properties.charge for atom in lig if atom.properties.charge)
+    lig.properties.charge = sum(atom.properties.get('charge', 0) for atom in lig)
 
     # Update the ligand smiles string
     rdmol = molkit.to_rdmol(lig)

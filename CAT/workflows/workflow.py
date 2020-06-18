@@ -18,9 +18,10 @@ import operator
 from shutil import rmtree
 from pathlib import Path
 from contextlib import AbstractContextManager
+from collections import abc
 from typing import (
     Optional, Union, Dict, Hashable, MutableMapping, TypeVar, Iterable, Container, Tuple, Callable,
-    Any, List, Type, Mapping, TYPE_CHECKING
+    Any, List, Type, Mapping, TYPE_CHECKING, cast
 )
 
 import numpy as np
@@ -31,18 +32,25 @@ import qmflows
 from rdkit.Chem.AllChem import UFFGetMoleculeForceField as UFF  # noqa: N814
 from scm.plams import finish, Settings, Molecule
 from scm.plams.core.basejob import Job
-from assertionlib.dataclass import AbstractDataClass
+from assertionlib import AbstractDataClass, NDRepr
 
 from .key_map import MOL, OPT
-from .workflow_dicts import WORKFLOW_TEMPLATE
+from .workflow_dicts import WORKFLOW_TEMPLATE, _TemplateMapping
 from ..utils import restart_init, JOB_MAP
 from ..logger import logger
 from ..settings_dataframe import SettingsDataFrame
 
 if TYPE_CHECKING:
     from dataCAT import Database
+    from dataCAT.database import JobRecipe
+else:
+    Database = 'dataCAT.Database'
+    JobRecipe = 'dataCAT.database.JobRecipe'
 
 __all__ = ['WorkFlow']
+
+NDRepr.repr_SettingsDataFrame = NDRepr.repr_DataFrame  # type: ignore
+aNDRepr = NDRepr()
 
 T = TypeVar('T')
 
@@ -52,12 +60,12 @@ def _return_true(value: object) -> bool:
     return True
 
 
-def _lt_0(value) -> int:
+def _lt_0(value) -> bool:
     """Return if **value** is smaller than ``0``."""
     return value < 0
 
 
-def pop_and_concatenate(mapping: MutableMapping[Hashable, T], base_key: Hashable,
+def pop_and_concatenate(mapping: MutableMapping[str, T], base_key: object,
                         filter_func: Callable[[Any], bool] = _return_true) -> Tuple[T, ...]:
     """Take a key and :meth:`pop<dict.pop>` all values from **mapping**.
 
@@ -105,7 +113,7 @@ def pop_and_concatenate(mapping: MutableMapping[Hashable, T], base_key: Hashable
 
     """
     i = 1
-    ret = []
+    ret: List[T] = []
     while True:
         key = f'{base_key}{i}'
         try:
@@ -118,8 +126,8 @@ def pop_and_concatenate(mapping: MutableMapping[Hashable, T], base_key: Hashable
             i += 1
 
 
-OptionalJobType = Union[None, Type[Job], Iterable[None], Iterable[Type[Job]]]
-OptionalSettings = Union[None, Settings, Iterable[None], Iterable[Settings]]
+OptionalJobType = Union[None, Type[Job], Iterable[Optional[Type[Job]]]]
+OptionalSettings = Union[None, Settings, Iterable[Optional[Settings]]]
 
 
 class WorkFlow(AbstractDataClass):
@@ -166,7 +174,7 @@ class WorkFlow(AbstractDataClass):
     """
 
     #: Map a name to a workflow template.
-    _WORKFLOW_TEMPLATES: Mapping[str, Mapping] = WORKFLOW_TEMPLATE
+    _WORKFLOW_TEMPLATES: Mapping[str, _TemplateMapping] = WORKFLOW_TEMPLATE
 
     #: A context manager for supressing Pandas :exc:`SettingwithCopyWarning`.
     _SUPRESS_SETTINGWITHCOPYWARNING: AbstractContextManager = pd.option_context(
@@ -213,9 +221,9 @@ class WorkFlow(AbstractDataClass):
         return self._read
 
     @read.setter
-    def read(self, value: Union[bool, Container]) -> None:
+    def read(self, value: Union[bool, Container[str]]) -> None:
         try:
-            self._read = bool(self.db) and self.mol_type in value
+            self._read = bool(self.db) and self.mol_type in value  # type: ignore
         except TypeError:  # value is not a container
             self._read = bool(value)
 
@@ -230,7 +238,7 @@ class WorkFlow(AbstractDataClass):
         return self._write
 
     @write.setter
-    def write(self, value: Union[bool, Container]) -> None:
+    def write(self, value: Union[bool, Container[str]]) -> None:
         try:
             self._write = bool(self.db) and self.mol_type in value
         except TypeError:  # value is not a container
@@ -247,7 +255,7 @@ class WorkFlow(AbstractDataClass):
         return self._overwrite
 
     @overwrite.setter
-    def overwrite(self, value: Union[bool, Container]) -> None:
+    def overwrite(self, value: Union[bool, Container[str]]) -> None:
         try:
             self._overwrite = bool(self.db) and self.mol_type in value
         except TypeError:  # value is not a container
@@ -264,7 +272,7 @@ class WorkFlow(AbstractDataClass):
         return self._jobs
 
     @jobs.setter
-    def jobs(self, value: Union[None, Type[Job], Iterable[None], Iterable[Type[Job]]]) -> None:
+    def jobs(self, value: Union[None, Type[Job], Iterable[Optional[Type[Job]]]]) -> None:
         if isinstance(value, type):
             self._jobs = (value,)
         else:
@@ -281,7 +289,7 @@ class WorkFlow(AbstractDataClass):
         return self._settings
 
     @settings.setter
-    def settings(self, value: Union[None, Settings, Iterable[None], Iterable[Settings]]) -> None:
+    def settings(self, value: Union[None, Settings, Iterable[Optional[Settings]]]) -> None:
         if isinstance(value, Settings):
             self._settings = (value,)
         else:
@@ -290,11 +298,11 @@ class WorkFlow(AbstractDataClass):
     # Methods and magic methods
 
     def __init__(self, name: str,
-                 db: Optional['Database'] = None,
-                 read: Union[bool, Container] = False,
-                 write: Union[bool, Container] = False,
-                 overwrite: Union[bool, Container] = False,
-                 path: Optional[str] = None,
+                 db: Optional[Database] = None,
+                 read: Union[bool, Container[str]] = False,
+                 write: Union[bool, Container[str]] = False,
+                 overwrite: Union[bool, Container[str]] = False,
+                 path: Union[None, str, 'os.PathLike[str]'] = None,
                  keep_files: bool = True,
                  read_template: bool = True,
                  jobs: OptionalJobType = None,
@@ -304,26 +312,25 @@ class WorkFlow(AbstractDataClass):
         super().__init__()
 
         if name not in self._WORKFLOW_TEMPLATES:
-            err = (f"Invalid value for the 'name' parameter: {repr(name)}\n"
-                   f"Allowed values: {', '.join(repr(k) for k in self._WORKFLOW_TEMPLATES)}")
-            raise ValueError(err)
+            raise ValueError(f"Invalid value for the 'name' parameter: {name!r}\n"
+                             f"Allowed values: {list(self._WORKFLOW_TEMPLATES.keys())!r}")
 
-        self.name: str = name
+        self.name = name
         self.db = db
 
-        self.read: bool = read
-        self.write: bool = write
-        self.overwrite: bool = overwrite
+        self.read = cast(bool, read)
+        self.write = cast(bool, write)
+        self.overwrite = cast(bool, overwrite)
 
-        self.path: str = path if path is not None else os.getcwd()
-        self.keep_files: bool = keep_files
-        self.read_template: bool = read_template
-        self.jobs: Iterable[Job] = jobs
-        self.settings: Iterable[Settings] = settings
+        self.path: Union[str, 'os.PathLike[str]'] = path if path is not None else os.getcwd()
+        self.keep_files = keep_files
+        self.read_template = read_template
+        self.jobs = cast(Tuple[Optional[Type[Job]], ...], jobs)
+        self.settings = cast(Tuple[Optional[Settings], ...], settings)
 
         for k, v in kwargs.items():
             if hasattr(self, k):
-                raise AttributeError(f"An attribute by the name of '{k}' already exists")
+                raise AttributeError(f"An attribute by the name of {k!r} already exists")
             setattr(self, k, v)
 
     @AbstractDataClass.inherit_annotations()
@@ -331,6 +338,7 @@ class WorkFlow(AbstractDataClass):
         iterator = super()._str_iterator()
         return ((k.strip('_'), v) for k, v in iterator)
 
+    # TODO: Ensure that func allways returns an array-like object (no iterators)
     def __call__(self, func: Callable, df: pd.DataFrame,
                  index: Union[slice, pd.Series] = slice(None),
                  columns: Optional[List[Hashable]] = None,
@@ -382,15 +390,25 @@ class WorkFlow(AbstractDataClass):
         with PlamsInit(path=self.path, folder=self.name), self._SUPRESS_SETTINGWITHCOPYWARNING:
             self_vars = {k.strip('_'): v for k, v in vars(self).items()}
             value = func(df.loc[slice1], columns=columns, **self_vars, **kwargs)
-            if no_loc:
+
+            if not isinstance(value, abc.Iterator) and not np.any(value):
+                return
+            elif no_loc:
                 for k, v in zip(slice2[1], value):
                     df[k] = v
             else:
-                df.loc[slice2] = value
+                try:
+                    df.loc[slice2] = value
+                except ValueError as ex:
+                    logger.debug(f"df = {aNDRepr.repr(df)}")
+                    logger.debug(f"index = {aNDRepr.repr(slice2[0])}")
+                    logger.debug(f"columns = {aNDRepr.repr(slice2[1])}")
+                    logger.debug(f"value = {aNDRepr.repr(value)}")
+                    raise ex
         logger.info(f"Finishing {self.description}\n")
 
     def from_db(self, df: pd.DataFrame, inplace: bool = True, get_mol: bool = True,
-                columns: Optional[Dict[Hashable, Any]] = None) -> Union[slice, pd.Series]:
+                columns: Optional[Mapping] = None) -> Union[slice, pd.Series]:
         """Ensure that all required keys are present in **df** and import from the database.
 
         Returns a :class:`pandas.index` with all to-be updated rows, as based on how many
@@ -426,7 +444,7 @@ class WorkFlow(AbstractDataClass):
 
         """
         # Add all necasary keys to **df**
-        import_columns = self.import_columns if columns is None else columns
+        import_columns: Mapping = self.import_columns if columns is None else columns
         for key, value in import_columns.items():
             if key not in df:
                 df[key] = value
@@ -525,16 +543,16 @@ class WorkFlow(AbstractDataClass):
         if isinstance(settings, SettingsDataFrame):
             settings = settings.settings
 
-        kwargs = {'name': name}
+        kwargs: Dict[str, Any] = {'name': name}
 
         # Raise a KeyError if a key cannot be found
         with Settings.supress_missing():
             try:  # Extract the correct template
-                template: Dict[str, Tuple[str, ...]] = cls._WORKFLOW_TEMPLATES[name]['template']
+                template = cls._WORKFLOW_TEMPLATES[name]['template']
             except KeyError as ex:
-                err = (f"Invalid value for the 'name' parameter: {repr(name)}\n"
+                err = (f"Invalid value for the 'name' parameter: {name!r}\n"
                        f"Allowed values: {', '.join(repr(k) for k in cls._WORKFLOW_TEMPLATES)}")
-                raise ValueError(err).with_traceback(ex.__traceback__)
+                raise ValueError(err) from ex
 
             # Create a dictionary with keyword arguments
             for k, v in template.items():
@@ -545,30 +563,30 @@ class WorkFlow(AbstractDataClass):
         kwargs['settings'] = pop_and_concatenate(kwargs, 's')
         return cls.from_dict(kwargs)
 
-    def get_recipe(self) -> Settings:
+    def get_recipe(self) -> Dict[Tuple[str], JobRecipe]:
         """Create a recipe for :meth:`WorkFlow.to_db`."""
         settings_names = [i[1:] for i in self.export_columns if i[0] == 'settings']
         uff_fallback = {
             'key': f'RDKit_{rdkit.__version__}', 'value': f'{UFF.__module__}.{UFF.__name__}'
         }
 
-        ret = Settings()
+        ret: Dict[Tuple[str], JobRecipe] = Settings()
         for name, job, settings in zip(settings_names, self.jobs, self.settings):
             # job is None, *i.e.* it's an RDKit UFF optimziation
             if job is None:
-                ret[name].update(uff_fallback)
+                ret[name].update(uff_fallback)  # type: ignore
                 continue
 
             settings = Settings(settings)
             if self.read_template:  # Update the settings using a QMFlows template
                 template = qmflows.geometry['specific'][self.type_to_string(job)].copy()
                 settings.soft_update(template)
-            ret[name].key = job
-            ret[name].value = settings
+            ret[name]['key'] = job
+            ret[name]['value'] = settings
         return ret
 
     @staticmethod
-    def _isnull(df: pd.DataFrame, columns: List[Hashable]) -> pd.DataFrame:
+    def _isnull(df: pd.DataFrame, columns: list) -> pd.DataFrame:
         """A more expansive version of the :func:`pandas.isnull` function.
 
         :class:`int` series now also return ``True`` if smaller than ``0`` and :class:`bool`
@@ -663,7 +681,9 @@ class WorkFlow(AbstractDataClass):
 class PlamsInit(AbstractContextManager):
     """A context manager for calling :func:`.restart_init` and |plams.finish|."""
 
-    def __init__(self, path: str, folder: str, hashing: str = 'input'):
+    def __init__(self, path: Union[str, 'os.PathLike[str]'],
+                 folder: Union[str, 'os.PathLike[str]'],
+                 hashing: str = 'input'):
         self.path = path
         self.folder = folder
         self.hashing = hashing

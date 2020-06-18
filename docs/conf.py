@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '2.1'
+needs_sphinx = '2.4'
 
 
 # Output is processed with HTML4 writer.
@@ -42,7 +42,9 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx.ext.doctest',
+    'sphinx.ext.duration'
 ]
 
 
@@ -75,7 +77,7 @@ copyright = f'{_year}, {author}'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the built documents.
-release = '0.9.4'  # The full version, including alpha/beta/rc tags.
+release = '0.9.5'  # The full version, including alpha/beta/rc tags.
 version = release.rsplit('.', maxsplit=1)[0]
 
 
@@ -224,6 +226,11 @@ autodoc_member_order = 'bysource'
 # False to disable support for NumPy style docstrings.
 # Defaults to True.
 napoleon_numpy_docstring = True
+
+# True to use the :ivar: role for instance variables.
+# False to use the .. attribute:: directive instead.
+# Defaults to False.
+napoleon_use_ivar = False
 
 
 # True to parse NumPy style docstrings.

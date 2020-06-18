@@ -294,6 +294,11 @@ def prep_ligand(ligand_df: SettingsDataFrame) -> SettingsDataFrame:
     # Optimize the ligands
     if optimize:
         init_ligand_opt(ligand_df)
+
+        # Remove failed optimizations from the ligand list
+        _is_opt = (lig.properties.get('is_opt', False) for lig in ligand_df[MOL])
+        is_opt = np.fromiter(_is_opt, count=len(ligand_df), dtype=bool)
+        ligand_df = ligand_df.loc[is_opt]
     else:
         for lig in ligand_df[MOL]:
             allign_axis(lig, lig.properties.dummies)

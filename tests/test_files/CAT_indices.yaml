@@ -1,0 +1,25 @@
+path: .
+
+input_cores:
+    - Cd68Se55.xyz
+
+input_ligands:
+    - 'CCCCCCC(=O)O[H]':
+        indices: [9, 10]
+    - 'CCCOCCC(O)=O':
+        indices: [1]
+    - 'CCCNCCC(O)=O':
+        indices: 1
+
+optional:
+    core:
+        dirname: core
+        dummy: Cl
+
+    ligand:
+        dirname: ligand
+        optimize: True
+
+    qd:
+        dirname: QD
+        construct_qd: False

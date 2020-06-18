@@ -4,8 +4,18 @@ input_cores:
     - Cd68Se55.xyz
 
 input_ligands:
-    - CO
-    - CCO
+    - CCCCCCCCO
+    - CCCCCCCCS
+    - CCCCCCCCSCCCCCCCC
+    - CCCCCCCCOCCCCCCCC
+    - CCCCCCCCN
+    - CCCCCCCCP
+    - CCCCCCCCNCCCCCCCC
+    - CCCCCCCCPCCCCCCCC
+    - CCCCCCCCP(CCCCCCCC)CCCCCCCC
+    - CCCCCCCCP(=O)(CCCCCCCC)CCCCCCCC
+    - CCCCCCCCC(=O)[O-]
+    - CCCCCCCC(CCCCCCCC)C(=O)[O-]
 
 optional:
     database:
@@ -13,7 +23,7 @@ optional:
         read: True
         write: True
         overwrite: False
-        mol_format: False
+        mol_format: [xyz]
         mongodb: False
 
     core:
@@ -23,8 +33,9 @@ optional:
     ligand:
         dirname: ligand
         optimize: True
-        split: True
+        split: False
         cosmo-rs: False
+        functional_groups: [N, P, O, S]
 
     qd:
         dirname: QD

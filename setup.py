@@ -16,7 +16,7 @@ with open('README.rst', encoding='utf-8') as readme_file:
     readme = readme_file.read()
 
 docs_require = [
-    'sphinx>=2.1',
+    'sphinx>=2.4,<3.1',
     'sphinx_rtd_theme',
 ]
 
@@ -29,7 +29,7 @@ tests_require = [
     'pydocstyle>=5.0.0',
     'pytest-pydocstyle>=2.1',
     'pytest-mock',
-    'data-CAT@git+https://github.com/nlesc-nano/data-CAT@devel'
+    'data-CAT@git+https://github.com/nlesc-nano/data-CAT@master'
 ]
 
 if sys.version_info[1] > 6:
