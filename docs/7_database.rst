@@ -82,13 +82,17 @@ API
 ---
 .. autoclass:: Database
     :members:
+
 .. autoclass:: DFProxy
+
 .. autoclass:: OpenLig
     :members:
     :inherited-members:
+
 .. autoclass:: OpenQD
     :members:
     :inherited-members:
+
 .. autoclass:: OpenYaml
     :members:
     :inherited-members:

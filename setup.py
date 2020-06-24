@@ -18,6 +18,7 @@ with open('README.rst', encoding='utf-8') as readme_file:
 docs_require = [
     'sphinx>=2.4,<3.1',
     'sphinx_rtd_theme',
+    'data-CAT@git+https://github.com/nlesc-nano/data-CAT@devel'
 ]
 
 tests_require = [
@@ -28,13 +29,12 @@ tests_require = [
     'pytest-flake8>=1.0.6',
     'pydocstyle>=5.0.0',
     'pytest-pydocstyle>=2.1',
-    'pytest-mock',
-    'data-CAT@git+https://github.com/nlesc-nano/data-CAT@master'
+    'pytest-mock'
 ]
 
 if sys.version_info[1] > 6:
     docs_require.append('nano-CAT@git+https://github.com/nlesc-nano/nano-CAT@devel')
-    docs_require.append('nano-CAT@git+https://github.com/nlesc-nano/auto-FOX@devel')
+    docs_require.append('auto-FOX@git+https://github.com/nlesc-nano/auto-FOX@devel')
 tests_require += docs_require
 
 setup(

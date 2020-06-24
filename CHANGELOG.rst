@@ -11,6 +11,11 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 * WiP: Added an option the import pre-built quantum dots.
 
 
+0.9.6
+*****
+* Updated the documentation for https://github.com/nlesc-nano/data-CAT/pull/25.
+
+
 0.9.5
 *****
 * Fixed a bug where rdkit molecules were not properly converted into numpy arrays.

@@ -77,7 +77,7 @@ copyright = f'{_year}, {author}'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the built documents.
-release = '0.9.5'  # The full version, including alpha/beta/rc tags.
+release = '0.9.6'  # The full version, including alpha/beta/rc tags.
 version = release.rsplit('.', maxsplit=1)[0]
 
 
@@ -213,7 +213,8 @@ intersphinx_mapping = {
     'qmflows': ('https://qmflows.readthedocs.io/en/latest/', None),
     'FOX': ('https://auto-fox.readthedocs.io/en/latest/', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-    'pymongo': ('https://pymongo.readthedocs.io/en/stable/', None)
+    'pymongo': ('https://pymongo.readthedocs.io/en/stable/', None),
+    'nanoutils': ('https://nano-utils.readthedocs.io/en/latest/', None),
 }
 
 
@@ -256,14 +257,6 @@ napoleon_use_admonition_for_notes = True
 # Defaults to False.
 napoleon_use_admonition_for_references = True
 
-
-# This value contains a list of modules to be mocked up.
-# This is useful when some external dependencies are not met at build time and break the building process.
-# You may only specify the root package of the dependencies themselves and omit the sub-modules:
-autodoc_mock_imports = [
-    'rdkit',
-    'h5py',
-]
 
 # A string of reStructuredText that will be included at the end of every source file that is read.
 # This is a possible place to add substitutions that should be available in every file (another being rst_prolog).

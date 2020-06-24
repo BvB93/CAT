@@ -14,6 +14,9 @@ look into the customization of the various jobs.
     5_bde
     6_type_aliases
     7_database
+    14_pdb_container
+    15_dtype
+    16_hdf5_logging
     10_context_managers
     11_md_asa
     12_recipes
