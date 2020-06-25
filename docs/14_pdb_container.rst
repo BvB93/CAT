@@ -15,6 +15,7 @@ Index
     PDBContainer.bonds
     PDBContainer.atom_count
     PDBContainer.bond_count
+    PDBContainer.index
 
     PDBContainer.__init__
     PDBContainer.__getitem__
@@ -34,7 +35,7 @@ Index
 API
 ---
 .. autoclass:: PDBContainer
-    :members: atoms, bonds, atom_count, bond_count, __init__
+    :members: atoms, bonds, atom_count, bond_count, index, __init__
 
 .. automethod:: PDBContainer.__getitem__
 .. automethod:: PDBContainer.__len__
