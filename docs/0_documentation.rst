@@ -17,6 +17,7 @@ look into the customization of the various jobs.
     14_pdb_container
     15_dtype
     16_hdf5_logging
+    17_property_dset
     10_context_managers
     11_md_asa
     12_recipes
