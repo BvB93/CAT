@@ -18,7 +18,7 @@ accoring to their functionality:
 
     The context managers can be accessed by calling
     either :attr:`.Database.csv_lig`, :attr:`.Database.csv_qd`,
-    :attr:`.Database.yaml` or :attr:`.Database.hdf5`, with the option
+    or :attr:`.Database.hdf5`, with the option
     of passing additional positional or keyword arguments.
 
     .. code:: python
@@ -30,10 +30,6 @@ accoring to their functionality:
         >>>     print(repr(db))
         DFProxy(ndframe=<pandas.core.frame.DataFrame at 0x7ff8e958ce80>)
 
-        >>> with database.yaml() as db:
-        >>>     print(type(db))
-        <class 'scm.plams.core.settings.Settings'>
-
         >>> with database.hdf5('r') as db:
         >>>     print(type(db))
         <class 'h5py._hl.files.File'>
@@ -41,9 +37,9 @@ accoring to their functionality:
 -   Importing to the database - these methods handle the importing of new data
     from python objects to the Database class:
 
-    ============================  =============================  =============================  ================================
-    :meth:`~Database.update_csv`  :meth:`~Database.update_yaml`  :meth:`~Database.update_hdf5`  :meth:`~Database.update_mongodb`
-    ============================  =============================  =============================  ================================
+    ============================  =============================  ================================
+    :meth:`~Database.update_csv`  :meth:`~Database.update_hdf5`  :meth:`~Database.update_mongodb`
+    ============================  =============================  ================================
 
 -   Exporting from the database - these methods handle the exporting of data
     from the Database class to other python objects or remote locations:
@@ -62,12 +58,10 @@ Index
     Database.csv_lig
     Database.csv_qd
     Database.hdf5
-    Database.yaml
     Database.mongodb
 
     Database.update_mongodb
     Database.update_csv
-    Database.update_yaml
     Database.update_hdf5
     Database.from_csv
     Database.from_hdf5
@@ -75,7 +69,6 @@ Index
     DFProxy
     OpenLig
     OpenQD
-    OpenYaml
 
 
 API
@@ -90,9 +83,5 @@ API
     :inherited-members:
 
 .. autoclass:: OpenQD
-    :members:
-    :inherited-members:
-
-.. autoclass:: OpenYaml
     :members:
     :inherited-members:
