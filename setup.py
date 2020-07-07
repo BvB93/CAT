@@ -11,9 +11,29 @@ here = os.path.abspath(os.path.dirname(__file__))
 version = {}
 with open(os.path.join(here, 'CAT', '__version__.py')) as f:
     exec(f.read(), version)
+__version__: str = version['__version__']
 
 with open('README.rst', encoding='utf-8') as readme_file:
     readme = readme_file.read()
+
+# Check if rdkit is manually installed (as it is not available via pypi)
+try:
+    import rdkit
+except ModuleNotFoundError as ex:
+    raise ModuleNotFoundError(
+        "'CAT' requires the 'rdkit' package: https://anaconda.org/conda-forge/rdkit"
+    ) from None
+
+# Check the dataCAT version
+try:
+    import dataCAT
+except ModuleNotFoundError:
+    pass
+else:
+    version_info = getattr(dataCAT, 'version_info', (-1, -1, -1))
+    if version_info < (0, 6):
+        raise ImportError(f"'CAT' {__version__} requires 'dataCAT' >= 0.6.0; "
+                          f"observed version: {dataCAT.__version__}")
 
 docs_require = [
     'sphinx>=2.4,<3.1',
@@ -39,7 +59,7 @@ tests_require += docs_require
 
 setup(
     name='CAT',
-    version=version['__version__'],
+    version=__version__,
     description=('A collection of tools designed for the automatic '
                  'construction of chemical compounds.'),
     long_description=f'{readme}\n\n',
@@ -106,6 +126,7 @@ setup(
     test_suite='tests',
     python_requires='>=3.6',
     install_requires=[
+        'h5py',
         'Nano-Utils>=0.4.3',
         'numpy',
         'scipy',
