@@ -33,9 +33,9 @@ EXPORT_MAPPING: Mapping[str, MolExportFunc] = MappingProxyType({
 
 
 def mol_to_file(mol_list: Iterable[Molecule],
-                path: Optional[str] = None,
+                path: Union[None, str, 'os.PathLike[str]'] = None,
                 overwrite: bool = True,
-                mol_format: Container[str] = ('xyz', 'pdb')) -> None:
+                mol_format: Container[str] = frozenset({'xyz', 'pdb'})) -> None:
     """Export all molecules in **mol_list** to .pdb, .xyz, .mol or .mol2 files.
 
     Parameters

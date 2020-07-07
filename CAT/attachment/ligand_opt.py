@@ -48,7 +48,7 @@ from .mol_split_cm import SplitMol
 from .remove_atoms_cm import RemoveAtoms
 from .optimize_rotmat import optimize_rotmat
 from ..logger import logger
-from ..workflows import WorkFlow, MOL
+from ..workflows import WorkFlow, MOL, FORMULA, OPT
 from ..mol_utils import fix_carboxyl, to_atnum
 from ..settings_dataframe import SettingsDataFrame
 from ..data_handling.mol_to_file import mol_to_file
@@ -64,23 +64,23 @@ def init_ligand_opt(ligand_df: SettingsDataFrame) -> None:
     workflow = WorkFlow.from_template(ligand_df, name='ligand_opt')
 
     # Pull from the database; push unoptimized structures
-    idx = workflow.from_db(ligand_df)
-    workflow.to_db(ligand_df, index=idx)
+    df_bool = workflow.from_db(ligand_df, FORMULA[0], read_mol=True)
+    workflow.to_db(ligand_df, df_bool, columns=[MOL, FORMULA], status='no_opt')
     if not ligand_df.settings.optional.ligand.optimize:
         return None
 
     # Start the ligand optimization
-    workflow(start_ligand_jobs, ligand_df, columns=[], index=idx)
+    workflow(start_ligand_jobs, ligand_df, columns=[], index=df_bool[OPT])
 
     # Push the optimized structures to the database
-    job_recipe = workflow.get_recipe()
-    workflow.to_db(ligand_df, status='optimized', index=idx, job_recipe=job_recipe)
+    workflow.to_db(ligand_df, df_bool, status='optimized')
 
     # Export ligands to .xyz, .pdb, .mol and/or .mol format
     mol_format = ligand_df.settings.optional.database.mol_format
     if mol_format:
         path = workflow.path
-        mol_to_file(ligand_df.loc[idx, MOL], path, mol_format=mol_format)
+        mol_array = ligand_df.loc[df_bool[OPT], MOL].values
+        mol_to_file(mol_array, path, mol_format=mol_format)
 
 
 def _set_charge_adfjob(s: Settings, charge: int) -> None:

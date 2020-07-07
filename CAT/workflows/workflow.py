@@ -32,6 +32,7 @@ from rdkit.Chem.AllChem import UFFGetMoleculeForceField as UFF  # noqa: N814
 from scm.plams import finish, Settings, Molecule
 from scm.plams.core.basejob import Job
 from assertionlib import AbstractDataClass, NDRepr
+from nanoutils import Literal
 
 from .key_map import MOL, OPT
 from .workflow_dicts import WORKFLOW_TEMPLATE, _TemplateMapping
@@ -41,10 +42,10 @@ from ..settings_dataframe import SettingsDataFrame
 
 if TYPE_CHECKING:
     from dataCAT import Database
-    from dataCAT.database import JobRecipe
+    from numpy.typing import ArrayLike
 else:
     Database = 'dataCAT.Database'
-    JobRecipe = 'dataCAT.database.JobRecipe'
+    ArrayLike = 'numpy.typing.ArrayLike'
 
 __all__ = ['WorkFlow']
 
@@ -188,7 +189,7 @@ class WorkFlow(AbstractDataClass):
         return self._WORKFLOW_TEMPLATES[self.name]['template']
 
     @property
-    def mol_type(self) -> str:
+    def mol_type(self) -> Literal['core', 'ligand', 'qd']:
         """Get :attr:`WorkFlow._WORKFLOW_TEMPLATES` [:attr:`WorkFlow.name`] [``"mol_type"``]."""
         return self._WORKFLOW_TEMPLATES[self.name]['mol_type']
 
@@ -198,7 +199,7 @@ class WorkFlow(AbstractDataClass):
         return self._WORKFLOW_TEMPLATES[self.name]['description']
 
     @property
-    def import_columns(self) -> Mapping[Tuple[str, str], Any]:
+    def import_columns(self) -> Mapping[Tuple[str, str], np.generic]:
         """Get :attr:`WorkFlow._WORKFLOW_TEMPLATES` [:attr:`WorkFlow.name`] [``"import_columns"``]."""  # noqa: E501
         return self._WORKFLOW_TEMPLATES[self.name]['import_columns']
 
@@ -206,11 +207,6 @@ class WorkFlow(AbstractDataClass):
     def export_columns(self) -> Tuple[Tuple[str, str], ...]:
         """Get :attr:`WorkFlow._WORKFLOW_TEMPLATES` [:attr:`WorkFlow.name`] [``"export_columns"``]."""  # noqa: E501
         return self._WORKFLOW_TEMPLATES[self.name]['export_columns']
-
-    @property
-    def dtype(self) -> np.dtype:
-        """Get :attr:`WorkFlow._WORKFLOW_TEMPLATES` [:attr:`WorkFlow.name`] [``"dtype"``]."""
-        return self._WORKFLOW_TEMPLATES[self.name]['dtype']
 
     # Getter and setter properties
 
@@ -308,7 +304,6 @@ class WorkFlow(AbstractDataClass):
                  overwrite: Union[bool, Container[str]] = False,
                  path: Union[None, str, 'os.PathLike[str]'] = None,
                  keep_files: bool = True,
-                 read_template: bool = True,
                  jobs: OptionalJobType = None,
                  settings: OptionalSettings = None,
                  **kwargs: Any) -> None:
@@ -328,7 +323,6 @@ class WorkFlow(AbstractDataClass):
 
         self.path: Union[str, 'os.PathLike[str]'] = path if path is not None else os.getcwd()
         self.keep_files = keep_files
-        self.read_template = read_template
         self.jobs = cast(Tuple[Optional[Type[Job]], ...], jobs)
         self.settings = cast(Tuple[Optional[Settings], ...], settings)
 
@@ -345,7 +339,7 @@ class WorkFlow(AbstractDataClass):
     # TODO: Ensure that func allways returns an array-like object (no iterators)
     def __call__(self, func: Callable, df: pd.DataFrame,
                  index: Union[slice, pd.Series] = slice(None),
-                 columns: Optional[List[Hashable]] = None,
+                 columns: Optional[ArrayLike] = None,
                  no_loc: bool = False, **kwargs) -> None:
         r"""Initialize the workflow.
 
@@ -411,8 +405,7 @@ class WorkFlow(AbstractDataClass):
                     raise ex
         logger.info(f"Finishing {self.description}\n")
 
-    def from_db(self, df: pd.DataFrame, inplace: bool = True, get_mol: bool = True,
-                columns: Optional[Mapping] = None) -> Union[slice, pd.Series]:
+    def from_db(self, df: pd.DataFrame, *columns: str, read_mol: bool = False) -> pd.DataFrame:
         """Ensure that all required keys are present in **df** and import from the database.
 
         Returns a :class:`pandas.index` with all to-be updated rows, as based on how many
@@ -424,56 +417,30 @@ class WorkFlow(AbstractDataClass):
         ----------
         df : :class:`pandas.DataFrame`
             A DataFrame with molecules and results.
-
-        inplace : :class:`bool`
-            If ``True``, perform an inplace update of the Cartesian coordinates of all molecules
-            rather than importing new molecules.
-
         get_mol : :class:`bool`
             If ``False`` do *not* try to import molecules from the database.
 
-        columns : :class:`dict` [:data:`Hashable<typing.Hashable>`, :class:`object`], optional
-            An dictionary whose keys will be used for slicing the columns of **df**
-            (*i.e.* :attr:`pandas.DataFrame.columns`).
-            The dictionary valeus are used as fill values if a key belongs
-            to a to-be created column.
-            Recommended values are :data:`numpy.nan`, ``None``, ``-1`` and/or ``False``.
-            If ``None``, use :attr:`WorkFlow.import_columns` instead.
-
         Returns
         -------
-        :class:`pandas.Series` [:class:`bool`] or :class:`slice`
+        :class:`pandas.Series[bool]<pandas.Series>` or :class:`slice`
             A Series for slicing a part of **df** or  a :class:`slice` object for
             slicing the entirety of **df** (*i.e.* :code:`slice(0, None`).
 
         """
-        # Add all necasary keys to **df**
-        import_columns: Mapping = self.import_columns if columns is None else columns
-        for key, value in import_columns.items():
-            if key not in df:
-                df[key] = value
+        if self.db is None or not self.read:
+            df_bool = df.copy()
+            df_bool[:] = True
+            return df_bool
 
-        if not self.read:  # Nothing to see here, move along
-            return slice(None)
+        df, df_bool = self.db.to_df(df, self.mol_type, *columns, read_mol=read_mol)
 
-        # Import from the database
-        with self._SUPRESS_SETTINGWITHCOPYWARNING:
-            mol_list = self.db.from_csv(df, database=self.mol_type,
-                                        get_mol=get_mol, inplace=inplace)
-            if not inplace:  # mol_list is an actual sequence instead of None
-                df[MOL] = mol_list
-
-        # Return a new DataFrame slice based on previously calculated results
         if self.overwrite:
-            return slice(None)
-        else:
-            keys = list(import_columns.keys())
-            return self._isnull(df, keys).any(axis=1)
+            df_bool[:] = True
+        return df_bool
 
-    def to_db(self, df: pd.DataFrame, status: Optional[str] = None,
-              job_recipe: Optional[dict] = None,
-              index: Union[slice, pd.Series] = slice(None),
-              columns: Optional[Dict[Hashable, Any]] = None) -> None:
+    def to_db(self, df: pd.DataFrame, df_bool: pd.DataFrame,
+              columns: Optional[ArrayLike] = None,
+              status: Optional[str] = None) -> None:
         """Export results to the database.
 
         Parameters
@@ -495,28 +462,27 @@ class WorkFlow(AbstractDataClass):
             If ``None``, use :attr:`WorkFlow.export_columns` instead.
 
         """
-        # Dont export any settings columns if job_recipe is None
-        # No job recipe == no settings to export anyway
-        _export_columns = self.export_columns if columns is None else columns
-        if job_recipe is None:
-            export_columns = [i for i in _export_columns if i[0] != 'settings']
-        else:
-            export_columns = list(_export_columns)
+        if self.db is None:
+            return
 
         # Set the optimization status of the molecules to True
         if status == 'optimized':
-            df.loc[index, OPT] = False
+            df[OPT] = True
+
+        # The group name
+        name = self.mol_type
+        if status == 'no_opt':
+            status = None
+            name += '_no_opt'  # type: ignore
 
         # Write results to the database
         if self.write:
             with self._SUPRESS_SETTINGWITHCOPYWARNING:
-                self.db.update_csv(
-                    df.loc[index],
-                    database=self.mol_type,
-                    columns=export_columns,
+                self.db.from_df(
+                    df, df_bool, name,
+                    columns=columns,
                     overwrite=self.overwrite,
-                    job_recipe=job_recipe,
-                    status=status,
+                    status=status
                 )
 
         # Remove the PLAMS results directories
@@ -567,91 +533,6 @@ class WorkFlow(AbstractDataClass):
         kwargs['settings'] = pop_and_concatenate(kwargs, 's')
         return cls.from_dict(kwargs)
 
-    def get_recipe(self) -> Dict[Tuple[str], JobRecipe]:
-        """Create a recipe for :meth:`WorkFlow.to_db`."""
-        settings_names = [i[1:] for i in self.export_columns if i[0] == 'settings']
-        uff_fallback = {
-            'key': f'RDKit_{rdkit.__version__}', 'value': f'{UFF.__module__}.{UFF.__name__}'
-        }
-
-        ret: Dict[Tuple[str], JobRecipe] = Settings()
-        for name, job, settings in zip(settings_names, self.jobs, self.settings):
-            # job is None, *i.e.* it's an RDKit UFF optimziation
-            if job is None:
-                ret[name].update(uff_fallback)  # type: ignore
-                continue
-
-            settings = Settings(settings)
-            if self.read_template:  # Update the settings using a QMFlows template
-                template = qmflows.geometry['specific'][self.type_to_string(job)].copy()
-                settings.soft_update(template)
-            ret[name]['key'] = job
-            ret[name]['value'] = settings
-        return ret
-
-    @staticmethod
-    def _isnull(df: pd.DataFrame, columns: list) -> pd.DataFrame:
-        """A more expansive version of the :func:`pandas.isnull` function.
-
-        :class:`int` series now also return ``True`` if smaller than ``0`` and :class:`bool`
-        series are simply inverted.
-
-        Parameters
-        ----------
-        df : :class:`pandas.DataFrame`
-            A DataFrame.
-
-        columns : :class:`list`
-            A list of column keys from **df**.
-
-        """
-        dtype_dict: Dict[np.dtype, Callable] = {
-            np.dtype(bool): operator.invert,
-            np.dtype(int): _lt_0,
-            np.dtype(float): pd.isnull,
-            np.dtype(object): pd.isnull
-        }
-
-        ret = pd.DataFrame(index=df.index)
-        for key, series in df[columns].items():
-            func = dtype_dict.get(series.dtype, pd.isnull)
-            ret[key] = func(series)
-        return ret
-
-    @staticmethod
-    def type_to_string(job: Union[Job, Type[Job]]) -> Optional[str]:
-        """Turn a :class:`type` instance into a :class:`str`.
-
-        Accepts one of the following |plams.Job| subclasses:
-            * ``ADFJob``
-            * ``AMSJob``
-            * ``DiracJob``
-            * ``Cp2kJob``
-            * ``GamessJob``
-            * ``ORCAJob``
-            * ``CRSJob``
-
-        Parameters
-        ----------
-        job : :class:`type` [|plams.Job|] or |plams.Job|
-            A PLAMS Job type or instance.
-
-        Returns
-        -------
-        :class:`str`, optional
-            Returns either ``None`` or an item pulled from :data:`._job_dict`.
-
-        """
-        if not isinstance(job, type):
-            job = type(job)  # Convert a class instance into a class
-
-        try:
-            return JOB_MAP[job]
-        except KeyError as ex:
-            logger.error(f"No default settings available for type: '{job.__class__.__name__}'")
-            logger.debug(f'{ex.__class__.__name__}: {ex}', exc_info=True)
-            return None
-
     @staticmethod
     def pop_job_settings(mol_list: Iterable[Molecule], key: str = 'job_path') -> List[List[str]]:
         """Take a list of molecules and pop and return all references to **key**.
@@ -674,10 +555,7 @@ class WorkFlow(AbstractDataClass):
         """
         ret = []
         for mol in mol_list:
-            try:
-                ret.append(mol.properties.pop(key))
-            except KeyError:
-                ret.append([])
+            ret.append(mol.properties.pop(key, []))
             mol.properties[key] = []
         return ret
 

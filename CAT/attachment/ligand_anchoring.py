@@ -109,7 +109,7 @@ def _get_df(mol_list: Sequence[Molecule],
     columns = pd.MultiIndex.from_tuples(columns_tuples, names=['index', 'sub index'])
 
     # Create, fill and return the dataframe
-    df = SettingsDataFrame(-1, index=idx, columns=columns, settings=settings)
+    df = SettingsDataFrame(0, index=idx, columns=columns, settings=settings)
     df[MOL] = mol_list
     df[FORMULA] = [lig.get_formula() for lig in df[MOL]]
     df[OPT] = False

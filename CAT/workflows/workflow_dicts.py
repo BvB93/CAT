@@ -8,8 +8,7 @@ import yaml
 import numpy as np
 
 from .key_map import (
-    OPT,
-    HDF5_INDEX,
+    MOL,
     JOB_SETTINGS_QD_OPT,
     JOB_SETTINGS_CRS,
     JOB_SETTINGS_BDE,
@@ -18,14 +17,6 @@ from .key_map import (
     ASA_INT,
     ASA_STRAIN,
     ASA_E,
-    SETTINGS1,
-    SETTINGS2,
-    SETTINGS_SOLV1,
-    SETTINGS_SOLV2,
-    SETTINGS_ASA,
-    SETTINGS_BDE1,
-    SETTINGS_BDE2,
-    SETTINGS_CDFT,
     V_BULK,
     CDFT_MU,
     CDFT_CHI,
@@ -51,7 +42,7 @@ if TYPE_CHECKING:
         description: str
         mol_type: str
         template: Mapping[str, Tuple[str, ...]]
-        import_columns: Mapping[Tuple[str, str], Any]
+        import_columns: Mapping[Tuple[str, str], np.generic]
         export_columns: Tuple[Tuple[str, str], ...]
 
 else:
@@ -78,36 +69,89 @@ def _recursive_mapping_proxy(dct: MutableMapping) -> MappingProxyType:
 def finalize_templates():
     """Update the templates using :data:`._TEMPLATE_UPDATE`."""
     base_dict = {
-        'asa': {'import_columns': {ASA_INT: np.nan, ASA_STRAIN: np.nan, ASA_E: np.nan},
-                'export_columns': (JOB_SETTINGS_ASA, SETTINGS_ASA, ASA_INT, ASA_STRAIN, ASA_E)},
-        'ligand_opt': {'import_columns': {HDF5_INDEX: -1, OPT: False},
-                       'export_columns': (HDF5_INDEX, OPT, SETTINGS1, SETTINGS2)},
-        'qd_attach': {'import_columns': {HDF5_INDEX: -1, OPT: False},
-                      'export_columns': (HDF5_INDEX,)},
-        'qd_opt': {'import_columns': {HDF5_INDEX: -1, OPT: False},
-                   'export_columns': (HDF5_INDEX, OPT, JOB_SETTINGS_QD_OPT, SETTINGS1, SETTINGS2)},
-        'crs': {'import_columns': {},
-                'export_columns': (JOB_SETTINGS_CRS, SETTINGS_SOLV1, SETTINGS_SOLV2)},
-        'bde': {'import_columns': {},
-                'export_columns': (JOB_SETTINGS_BDE, SETTINGS_BDE1, SETTINGS_BDE2)},
-        'forcefield': {'import_columns': {},
-                       'export_columns': ()},
-        'bulkiness': {'import_columns': {V_BULK: np.nan},
-                      'export_columns': (V_BULK,)},
-        'multi_ligand': {'import_columns': {HDF5_INDEX: -1, OPT: False},
-                         'export_columns': (HDF5_INDEX, OPT)},
-        'cdft': {'import_columns': {CDFT_MU: np.nan, CDFT_CHI: np.nan, CDFT_ETA: np.nan,
-                                    CDFT_S: np.nan, CDFT_GAMMA: np.nan, CDFT_OMEGA: np.nan,
-                                    CDFT_NUCLEOFUGE: np.nan, CDFT_ELECTROFUGE: np.nan,
-                                    CDFT_W_MINUS: np.nan, CDFT_W_PLUS: np.nan,
-                                    CDFT_ELECTROPHILICITY: np.nan, CDFT_DELTAF_MINUS: np.nan,
-                                    CDFT_DELTAF_PLUS: np.nan, CDFT_MU_MINUS: np.nan,
-                                    CDFT_MU_PLUS: np.nan},
-                 'export_columns': (JOB_SETTINGS_CDFT, SETTINGS_CDFT, CDFT_MU, CDFT_CHI, CDFT_ETA,
-                                    CDFT_S, CDFT_GAMMA, CDFT_OMEGA, CDFT_NUCLEOFUGE,
-                                    CDFT_ELECTROFUGE, CDFT_W_MINUS, CDFT_W_PLUS,
-                                    CDFT_ELECTROPHILICITY, CDFT_DELTAF_MINUS, CDFT_DELTAF_PLUS,
-                                    CDFT_MU_MINUS, CDFT_MU_PLUS)},
+        'asa': {
+            'import_columns': {ASA_INT: np.float_(0),
+                               ASA_STRAIN: np.float_(0),
+                               ASA_E: np.float_(0)},
+            'export_columns': (JOB_SETTINGS_ASA,
+                               ASA_INT,
+                               ASA_STRAIN,
+                               ASA_E)
+        },
+
+        'ligand_opt': {
+            'import_columns': {MOL: np.object_('')},
+            'export_columns': (MOL,)
+        },
+
+        'qd_attach': {
+            'import_columns': {MOL: np.object_('')},
+            'export_columns': (MOL,)
+        },
+
+        'qd_opt': {
+            'import_columns': {MOL: np.object_('')},
+            'export_columns': (MOL,
+                               JOB_SETTINGS_QD_OPT)
+        },
+
+        'crs': {
+            'import_columns': {},
+            'export_columns': (JOB_SETTINGS_CRS,)
+        },
+
+        'bde': {
+            'import_columns': {},
+            'export_columns': (JOB_SETTINGS_BDE,)
+        },
+
+        'forcefield': {
+            'import_columns': {},
+            'export_columns': ()
+        },
+
+        'bulkiness': {
+            'import_columns': {V_BULK: np.float_(0)},
+            'export_columns': (V_BULK,)
+        },
+
+        'multi_ligand': {
+            'import_columns': {MOL: np.object_('')},
+            'export_columns': (MOL,)
+        },
+
+        'cdft': {
+            'import_columns': {CDFT_MU: np.float_(0),
+                               CDFT_CHI: np.float_(0),
+                               CDFT_ETA: np.float_(0),
+                               CDFT_S: np.float_(0),
+                               CDFT_GAMMA: np.float_(0),
+                               CDFT_OMEGA: np.float_(0),
+                               CDFT_NUCLEOFUGE: np.float_(0),
+                               CDFT_ELECTROFUGE: np.float_(0),
+                               CDFT_W_MINUS: np.float_(0),
+                               CDFT_W_PLUS: np.float_(0),
+                               CDFT_ELECTROPHILICITY: np.float_(0),
+                               CDFT_DELTAF_MINUS: np.float_(0),
+                               CDFT_DELTAF_PLUS: np.float_(0),
+                               CDFT_MU_MINUS: np.float_(0),
+                               CDFT_MU_PLUS: np.float_(0)},
+            'export_columns': (JOB_SETTINGS_CDFT,
+                               CDFT_MU,
+                               CDFT_CHI,
+                               CDFT_ETA,
+                               CDFT_S,
+                               CDFT_GAMMA,
+                               CDFT_OMEGA,
+                               CDFT_NUCLEOFUGE,
+                               CDFT_ELECTROFUGE,
+                               CDFT_W_MINUS,
+                               CDFT_W_PLUS,
+                               CDFT_ELECTROPHILICITY,
+                               CDFT_DELTAF_MINUS,
+                               CDFT_DELTAF_PLUS,
+                               CDFT_MU_MINUS,
+                               CDFT_MU_PLUS)},
     }
 
     templates = _load_templates()

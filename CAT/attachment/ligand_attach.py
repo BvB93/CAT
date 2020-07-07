@@ -49,7 +49,7 @@ from assertionlib.ndrepr import aNDRepr
 
 from .perp_surface import get_surface_vec
 from ..mol_utils import get_index, round_coords  # noqa: F401
-from ..workflows import WorkFlow, HDF5_INDEX, MOL, OPT
+from ..workflows import WorkFlow, HDF5_INDEX, MOL, OPT, LIGAND_COUNT
 from ..settings_dataframe import SettingsDataFrame
 from ..data_handling import mol_to_file, WARN_MAP
 
@@ -80,6 +80,7 @@ def init_qd_construction(ligand_df: SettingsDataFrame, core_df: SettingsDataFram
     # import pdb; pdb.set_trace()
     qd_df = _get_df(core_df.index, ligand_df.index, ligand_df.settings)
     qd_df[MOL] = None
+    qd_df[LIGAND_COUNT] = 0
     qd_df.sort_index(inplace=True)
     if not construct_qd:
         return qd_df
@@ -88,18 +89,23 @@ def init_qd_construction(ligand_df: SettingsDataFrame, core_df: SettingsDataFram
     workflow.keep_files = False
 
     # Pull from the database; push unoptimized structures
-    idx = workflow.from_db(qd_df, inplace=False)
+    df_bool = workflow.from_db(qd_df, LIGAND_COUNT[0], read_mol=True)
 
     # Start the ligand optimization
+    idx = df_bool[MOL]
     workflow(construct_mol_series, qd_df, columns=MOL, index=idx,
              core_df=core_df, ligand_df=ligand_df)
-    workflow.to_db(qd_df, index=idx)
+
+    for k, mol in core_df[MOL].items():
+        qd_df.loc[k, LIGAND_COUNT] = len(mol.properties.dummies)
+    workflow.to_db(qd_df, df_bool, columns=[MOL, LIGAND_COUNT], status='no_opt')
 
     # Export ligands to .xyz, .pdb, .mol and/or .mol format
     mol_format = qd_df.settings.optional.database.mol_format
     if mol_format and not qd_df.settings.optional.qd.optimize:
         path = workflow.path
-        mol_to_file(qd_df.loc[idx, MOL], path, mol_format=mol_format)
+        mol_array = qd_df.loc[idx, MOL].values
+        mol_to_file(mol_array, path, mol_format=mol_format)
 
     return qd_df
 
@@ -197,7 +203,7 @@ def _get_df(core_index: pd.MultiIndex,
     columns = pd.MultiIndex.from_tuples(column_tups, names=['index', 'sub index'])
 
     # Create and return the quantum dot dataframe
-    data = {HDF5_INDEX: -1, OPT: False}
+    data = {HDF5_INDEX: 0, OPT: False}
     return SettingsDataFrame(data, index=index, columns=columns, settings=settings)
 
 
