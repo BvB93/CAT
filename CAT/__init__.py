@@ -31,17 +31,6 @@ __email__ = 'b.f.van.beek@vu.nl'
 version_info = VersionInfo.from_str(__version__)
 del VersionInfo
 
-# Check the dataCAT version
-try:
-    import dataCAT
-except ModuleNotFoundError:
-    pass
-else:
-    version_info = getattr(dataCAT, 'version_info', (-1, -1, -1))
-    if version_info < (0, 6):
-        raise ImportError(f"'CAT' {__version__} requires 'dataCAT' >= 0.6.0; "
-                          f"observed version: {dataCAT.__version__}")
-
 __all__ = [
     'logger',
 
