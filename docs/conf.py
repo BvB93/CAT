@@ -21,6 +21,8 @@ import os
 import sys
 import datetime
 
+import CAT
+
 sys.path.insert(0, os.path.abspath('..'))
 
 # -- General configuration ------------------------------------------------
@@ -69,15 +71,15 @@ master_doc = 'index'
 
 
 # General information about the project.
-project = 'CAT'
+project = CAT.__name__
 _year = str(datetime.datetime.now().year)
-author = 'B. F. van Beek & J. Belic'
+author = CAT.__author__
 copyright = f'{_year}, {author}'
 
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the built documents.
-release = '0.9.6'  # The full version, including alpha/beta/rc tags.
+release = CAT.__version__  # The full version, including alpha/beta/rc tags.
 version = release.rsplit('.', maxsplit=1)[0]
 
 

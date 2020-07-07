@@ -25,7 +25,7 @@ from .data_handling import (
 from .utils import get_template
 
 __version__ = __version__
-__author__ = "Bas van Beek"
+__author__ = 'Bas van Beek & Jelena Belic'
 __email__ = 'b.f.van.beek@vu.nl'
 
 version_info = VersionInfo.from_str(__version__)
