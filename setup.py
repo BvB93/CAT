@@ -24,17 +24,6 @@ except ModuleNotFoundError as ex:
         "'CAT' requires the 'rdkit' package: https://anaconda.org/conda-forge/rdkit"
     ) from None
 
-# Check the dataCAT version
-try:
-    import dataCAT
-except ModuleNotFoundError:
-    pass
-else:
-    version_info = getattr(dataCAT, 'version_info', (-1, -1, -1))
-    if version_info < (0, 6):
-        raise ImportError(f"'CAT' {__version__} requires 'dataCAT' >= 0.6.0; "
-                          f"observed version: {dataCAT.__version__}")
-
 docs_require = [
     'sphinx>=2.4,<3.1',
     'sphinx_rtd_theme',
