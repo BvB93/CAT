@@ -14,21 +14,17 @@ API
 """
 
 import os
-import operator
 from shutil import rmtree
 from pathlib import Path
 from collections import abc
 from typing import (
-    Optional, Union, Dict, Hashable, MutableMapping, TypeVar, Iterable, Container, Tuple, Callable,
+    Optional, Union, Dict, MutableMapping, TypeVar, Iterable, Container, Tuple, Callable,
     Any, List, Type, Mapping, TYPE_CHECKING, cast, ClassVar, ContextManager
 )
 
 import numpy as np
 import pandas as pd
 
-import rdkit
-import qmflows
-from rdkit.Chem.AllChem import UFFGetMoleculeForceField as UFF  # noqa: N814
 from scm.plams import finish, Settings, Molecule
 from scm.plams.core.basejob import Job
 from assertionlib import AbstractDataClass, NDRepr
@@ -36,7 +32,7 @@ from nanoutils import Literal
 
 from .key_map import MOL, OPT
 from .workflow_dicts import WORKFLOW_TEMPLATE, _TemplateMapping
-from ..utils import restart_init, JOB_MAP
+from ..utils import restart_init
 from ..logger import logger
 from ..settings_dataframe import SettingsDataFrame
 

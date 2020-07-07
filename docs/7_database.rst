@@ -17,8 +17,7 @@ accoring to their functionality:
     for loading and unloading parts of the database from the harddrive.
 
     The context managers can be accessed by calling
-    either :attr:`.Database.csv_lig`, :attr:`.Database.csv_qd`,
-    or :attr:`.Database.hdf5`, with the option
+    either :attr:`.Database.hdf5`, with the option
     of passing additional positional or keyword arguments.
 
     .. code:: python
@@ -26,27 +25,23 @@ accoring to their functionality:
         >>> from dataCAT import Database
 
         >>> database = Database()
-        >>> with database.csv_lig(write=False) as db:
-        >>>     print(repr(db))
-        DFProxy(ndframe=<pandas.core.frame.DataFrame at 0x7ff8e958ce80>)
-
-        >>> with database.hdf5('r') as db:
-        >>>     print(type(db))
+        >>> with database.hdf5('r') as f:
+        ...     print(type(f))
         <class 'h5py._hl.files.File'>
 
 -   Importing to the database - these methods handle the importing of new data
     from python objects to the Database class:
 
-    ============================  =============================  ================================
-    :meth:`~Database.update_csv`  :meth:`~Database.update_hdf5`  :meth:`~Database.update_mongodb`
-    ============================  =============================  ================================
+    =========================  ================================
+    :meth:`~Database.from_df`  :meth:`~Database.update_mongodb`
+    =========================  ================================
 
 -   Exporting from the database - these methods handle the exporting of data
     from the Database class to other python objects or remote locations:
 
-    ==========================  ===========================
-    :meth:`~Database.from_csv`  :meth:`~Database.from_hdf5`
-    ==========================  ===========================
+    ======================= =
+    :meth:`~Database.to_df`
+    ======================= =
 
 
 Index
@@ -55,33 +50,15 @@ Index
 .. autosummary::
 
     Database.dirname
-    Database.csv_lig
-    Database.csv_qd
     Database.hdf5
     Database.mongodb
 
     Database.update_mongodb
-    Database.update_csv
-    Database.update_hdf5
-    Database.from_csv
-    Database.from_hdf5
-
-    DFProxy
-    OpenLig
-    OpenQD
+    Database.from_df
+    Database.to_df
 
 
 API
 ---
 .. autoclass:: Database
     :members:
-
-.. autoclass:: DFProxy
-
-.. autoclass:: OpenLig
-    :members:
-    :inherited-members:
-
-.. autoclass:: OpenQD
-    :members:
-    :inherited-members:

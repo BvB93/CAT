@@ -14,7 +14,7 @@ API
 
 import os
 from types import MappingProxyType
-from typing import Iterable, Optional, Container, Mapping, Union, Callable
+from typing import Iterable, Container, Mapping, Union, Callable
 from os.path import join, isdir, isfile, exists
 
 from scm.plams import Molecule, writepdb
