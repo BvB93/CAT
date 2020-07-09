@@ -60,8 +60,6 @@ def init_qd_opt(qd_df: SettingsDataFrame) -> None:
     # Push the optimized structures to the database
     workflow.to_db(qd_df, df_bool, columns=[JOB_SETTINGS_QD_OPT, MOL], status='optimized')
 
-
-
     # Export ligands to .xyz, .pdb, .mol and/or .mol format
     mol_format = qd_df.settings.optional.database.mol_format
     if mol_format:

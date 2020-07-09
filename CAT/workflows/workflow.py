@@ -30,7 +30,7 @@ from scm.plams.core.basejob import Job
 from assertionlib import AbstractDataClass, NDRepr
 from nanoutils import Literal
 
-from .key_map import MOL, OPT
+from .key_map import MOL, OPT, HDF5_INDEX
 from .workflow_dicts import WORKFLOW_TEMPLATE, _TemplateMapping
 from ..utils import restart_init
 from ..logger import logger
@@ -429,12 +429,15 @@ class WorkFlow(AbstractDataClass):
             return df_bool
 
         if not self.read:
+            _df = df
             df = df.index
 
-        _, df_bool = self.db.to_df(df, self.mol_type, *columns, read_mol=read_mol)
+        df, df_bool = self.db.to_df(df, self.mol_type, *columns, read_mol=read_mol)
 
         if self.overwrite:
             df_bool[:] = True
+        if not self.read and read_mol:
+            _df[HDF5_INDEX] = df[HDF5_INDEX]
         return df_bool
 
     def to_db(self, df: pd.DataFrame, df_bool: pd.DataFrame,
