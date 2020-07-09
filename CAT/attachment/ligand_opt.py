@@ -72,6 +72,9 @@ def init_ligand_opt(ligand_df: SettingsDataFrame) -> None:
     # Start the ligand optimization
     workflow(start_ligand_jobs, ligand_df, columns=[], index=df_bool[OPT])
 
+    is_opt = (lig.properties.get('is_opt', False) for lig in ligand_df[MOL])
+    ligand_df[OPT] = np.fromiter(is_opt, count=len(ligand_df), dtype=bool)
+
     # Push the optimized structures to the database
     workflow.to_db(ligand_df, df_bool, status='optimized')
 

@@ -47,7 +47,7 @@ from .attachment.distribution import distribute_idx
 from .attachment.ligand_attach import init_qd_construction
 from .attachment.ligand_anchoring import init_ligand_anchoring
 
-from .workflows import MOL
+from .workflows import MOL, OPT
 
 try:
     import nanoCAT
@@ -296,9 +296,7 @@ def prep_ligand(ligand_df: SettingsDataFrame) -> SettingsDataFrame:
         init_ligand_opt(ligand_df)
 
         # Remove failed optimizations from the ligand list
-        _is_opt = (lig.properties.get('is_opt', False) for lig in ligand_df[MOL])
-        is_opt = np.fromiter(_is_opt, count=len(ligand_df), dtype=bool)
-        ligand_df = ligand_df.loc[is_opt]
+        ligand_df = ligand_df.loc[ligand_df[OPT]]
     else:
         for lig in ligand_df[MOL]:
             allign_axis(lig, lig.properties.dummies)
