@@ -36,6 +36,7 @@ API
 
 """
 
+from itertools import chain, cycle, repeat
 from typing import List, Tuple, Any, Optional, NoReturn, Union, Iterable
 from collections import abc
 
@@ -89,6 +90,10 @@ def init_qd_construction(ligand_df: SettingsDataFrame, core_df: SettingsDataFram
 
     # Pull from the database; push unoptimized structures
     df_bool = workflow.from_db(qd_df, LIGAND_COUNT[0], read_mol=True)
+    for (i, j, k, m), qd in qd_df[MOL].items():
+        if qd:
+            _set_qd_properties(qd, core_df.loc[(i, j), MOL],
+                               ligand_df.loc[(k, m), MOL], workflow)
 
     # Start the ligand optimization
     idx = df_bool[MOL]
@@ -105,8 +110,28 @@ def init_qd_construction(ligand_df: SettingsDataFrame, core_df: SettingsDataFram
         path = workflow.path
         mol_array = qd_df.loc[idx, MOL].values
         mol_to_file(mol_array, path, mol_format=mol_format)
-
     return qd_df
+
+
+def _set_qd_properties(qd: Molecule, core: Molecule, ligand: Molecule, workflow: WorkFlow) -> None:
+    qd_iter = iter(qd)
+    for qd_at, at in zip(qd_iter, core):
+        qd_at.properties = at.properties.copy()
+
+    start = at.properties.pdb_info.ResidueNumber + 1
+    res_iterator = chain.from_iterable(repeat(i, len(ligand)) for i in range(start, len(qd)))
+    for qd_at, at, i in zip(qd_iter, cycle(ligand), res_iterator):
+        qd_at.properties = at.properties.copy()
+        qd_at.properties.pdb_info.ResidueNumber = i
+
+    qd.properties = Settings({
+        'indices': [i for i, at in enumerate(qd, 1) if
+                    at.properties.pdb_info.ResidueName == 'COR' or at.properties.anchor],
+        'path': workflow.path,
+        'name': _get_name(qd, core, ligand),
+        'job_path': [],
+        'prm': ligand.properties.get('prm')
+    })
 
 
 def construct_mol_series(qd_df: SettingsDataFrame, core_df: pd.DataFrame,
@@ -194,7 +219,7 @@ def _get_df(core_index: pd.MultiIndex,
     # Create the index
     idx_tups = [(i, j, k, l) for i, j in core_index for k, l in ligand_index]
     index = pd.MultiIndex.from_tuples(
-        idx_tups, names=['core', 'core anchor', 'ligand smiles', 'ligand anchor']
+        idx_tups, names=['core', 'core anchor', 'ligand', 'ligand anchor']
     )
 
     # Create the collumns
@@ -204,6 +229,13 @@ def _get_df(core_index: pd.MultiIndex,
     # Create and return the quantum dot dataframe
     data = {HDF5_INDEX: 0, OPT: False}
     return SettingsDataFrame(data, index=index, columns=columns, settings=settings)
+
+
+def _get_name(qd, core, ligand) -> str:
+    core_name = core.properties.name
+    anchor = str(qd[-1].properties.pdb_info.ResidueNumber - 1)
+    lig_name = ligand.properties.name
+    return f'{core_name}__{anchor}_{lig_name}'
 
 
 def ligand_to_qd(core: Molecule, ligand: Molecule, path: str,
@@ -240,12 +272,6 @@ def ligand_to_qd(core: Molecule, ligand: Molecule, path: str,
         A quantum dot consisting of a core molecule and *n* ligands
 
     """
-    def get_name() -> str:
-        core_name = core.properties.name
-        anchor = str(qd[-1].properties.pdb_info.ResidueNumber - 1)
-        lig_name = ligand.properties.name
-        return f'{core_name}__{anchor}_{lig_name}'
-
     idx_subset = idx_subset if idx_subset is not None else ...
 
     # Define vectors and indices used for rotation and translation the ligands
@@ -273,7 +299,7 @@ def ligand_to_qd(core: Molecule, ligand: Molecule, path: str,
         'indices': [i for i, at in enumerate(qd, 1) if
                     at.properties.pdb_info.ResidueName == 'COR' or at.properties.anchor],
         'path': path,
-        'name': get_name(),
+        'name': _get_name(qd, core, ligand),
         'job_path': [],
         'prm': ligand.properties.get('prm')
     })

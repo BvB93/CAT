@@ -22,6 +22,8 @@ API
 
 from typing import Tuple, Iterable, Optional, Type, NoReturn, Any
 
+import numpy as np
+
 from scm.plams import Molecule, Settings, AMSJob
 from scm.plams.core.basejob import Job
 
@@ -43,23 +45,28 @@ def init_qd_opt(qd_df: SettingsDataFrame) -> None:
     """Initialize the ligand optimization procedure."""
     workflow = WorkFlow.from_template(qd_df, name='qd_opt')
 
-    # Pull from the database; push unoptimized structures
+    # Pull from the databases
     df_bool = workflow.from_db(qd_df, read_mol=True)
-    idx = df_bool[OPT]
     workflow(start_qd_opt, qd_df, columns=[MOL], index=df_bool[OPT])
 
     # Sets a nested list
     # This cannot be done with loc is it will try to expand the list into a 2D array
     qd_df[JOB_SETTINGS_QD_OPT] = workflow.pop_job_settings(qd_df[MOL])
 
+    is_opt = (qd.properties.get('is_opt', False) for qd in qd_df[MOL])
+    qd_df[OPT] = np.fromiter(is_opt, count=len(qd_df), dtype=bool)
+    df_bool[OPT] &= qd_df[OPT]
+
     # Push the optimized structures to the database
     workflow.to_db(qd_df, df_bool, columns=[JOB_SETTINGS_QD_OPT, MOL], status='optimized')
+
+
 
     # Export ligands to .xyz, .pdb, .mol and/or .mol format
     mol_format = qd_df.settings.optional.database.mol_format
     if mol_format:
         path = workflow.path
-        mol_array = qd_df.loc[idx, MOL].values
+        mol_array = qd_df.loc[df_bool[OPT], MOL].values
         mol_to_file(mol_array, path, mol_format=mol_format)
 
 

@@ -104,7 +104,7 @@ def _get_df(mol_list: Sequence[Molecule],
     """
     # Create the dataframe index and columns
     idx_tuples = [(mol.properties.smiles, mol.properties.anchor) for mol in mol_list]
-    idx = pd.MultiIndex.from_tuples(idx_tuples, names=['smiles', 'anchor'])
+    idx = pd.MultiIndex.from_tuples(idx_tuples, names=['ligand', 'ligand anchor'])
     columns_tuples = [MOL, FORMULA, HDF5_INDEX, OPT]
     columns = pd.MultiIndex.from_tuples(columns_tuples, names=['index', 'sub index'])
 

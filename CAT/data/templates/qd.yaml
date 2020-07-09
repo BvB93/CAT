@@ -3,10 +3,6 @@ UFF:
     input:
         uff:
             library: uff
-        ams:
-            system:
-                bondorders:
-                    _1: null
 
 COSMO-RS activity coefficient:
     description: COSMO-RS activity coefficient calculation; parameters not included!

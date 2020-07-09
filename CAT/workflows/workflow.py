@@ -423,12 +423,15 @@ class WorkFlow(AbstractDataClass):
             slicing the entirety of **df** (*i.e.* :code:`slice(0, None`).
 
         """
-        if self.db is None or not self.read:
+        if self.db is None:
             df_bool = df.copy()
             df_bool[:] = True
             return df_bool
 
-        df, df_bool = self.db.to_df(df, self.mol_type, *columns, read_mol=read_mol)
+        if not self.read:
+            df = df.index
+
+        _, df_bool = self.db.to_df(df, self.mol_type, *columns, read_mol=read_mol)
 
         if self.overwrite:
             df_bool[:] = True
