@@ -27,7 +27,7 @@ except ModuleNotFoundError as ex:
 docs_require = [
     'sphinx>=2.4,<3.1',
     'sphinx_rtd_theme',
-    'data-CAT@git+https://github.com/nlesc-nano/data-CAT@devel'
+    'data-CAT@git+https://github.com/nlesc-nano/data-CAT@master'
 ]
 
 tests_require = [
@@ -119,7 +119,7 @@ setup(
         'Nano-Utils>=0.4.3',
         'numpy',
         'scipy',
-        'pandas<1.0.0',
+        'pandas',
         'pyyaml>=5.1',
         'schema',
         'AssertionLib>=2.2.3',
