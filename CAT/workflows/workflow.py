@@ -17,11 +17,10 @@ import os
 import operator
 from shutil import rmtree
 from pathlib import Path
-from contextlib import AbstractContextManager
 from collections import abc
 from typing import (
     Optional, Union, Dict, Hashable, MutableMapping, TypeVar, Iterable, Container, Tuple, Callable,
-    Any, List, Type, Mapping, TYPE_CHECKING, cast
+    Any, List, Type, Mapping, TYPE_CHECKING, cast, ClassVar, ContextManager
 )
 
 import numpy as np
@@ -174,17 +173,17 @@ class WorkFlow(AbstractDataClass):
     """
 
     #: Map a name to a workflow template.
-    _WORKFLOW_TEMPLATES: Mapping[str, _TemplateMapping] = WORKFLOW_TEMPLATE
+    _WORKFLOW_TEMPLATES: ClassVar[Mapping[str, _TemplateMapping]] = WORKFLOW_TEMPLATE
 
     #: A context manager for supressing Pandas :exc:`SettingwithCopyWarning`.
-    _SUPRESS_SETTINGWITHCOPYWARNING: AbstractContextManager = pd.option_context(
+    _SUPRESS_SETTINGWITHCOPYWARNING: ClassVar[ContextManager[None]] = pd.option_context(
         'mode.chained_assignment', None
     )
 
     # Get-only properties
 
     @property
-    def template(self) -> Dict[str, Tuple[str, ...]]:
+    def template(self) -> Mapping[str, Tuple[str, ...]]:
         """Get :attr:`WorkFlow._WORKFLOW_TEMPLATES` [:attr:`WorkFlow.name`] [``"template"``]."""
         return self._WORKFLOW_TEMPLATES[self.name]['template']
 
@@ -199,14 +198,19 @@ class WorkFlow(AbstractDataClass):
         return self._WORKFLOW_TEMPLATES[self.name]['description']
 
     @property
-    def import_columns(self) -> Dict[str, Tuple[str, str]]:
-        """Get :attr:`WorkFlow._WORKFLOW_TEMPLATES` [:attr:`WorkFlow.name`] [``"import_columns"``]."""  # noqa
+    def import_columns(self) -> Mapping[Tuple[str, str], Any]:
+        """Get :attr:`WorkFlow._WORKFLOW_TEMPLATES` [:attr:`WorkFlow.name`] [``"import_columns"``]."""  # noqa: E501
         return self._WORKFLOW_TEMPLATES[self.name]['import_columns']
 
     @property
     def export_columns(self) -> Tuple[Tuple[str, str], ...]:
-        """Get :attr:`WorkFlow._WORKFLOW_TEMPLATES` [:attr:`WorkFlow.name`] [``"export_columns"``]."""  # noqa
+        """Get :attr:`WorkFlow._WORKFLOW_TEMPLATES` [:attr:`WorkFlow.name`] [``"export_columns"``]."""  # noqa: E501
         return self._WORKFLOW_TEMPLATES[self.name]['export_columns']
+
+    @property
+    def dtype(self) -> np.dtype:
+        """Get :attr:`WorkFlow._WORKFLOW_TEMPLATES` [:attr:`WorkFlow.name`] [``"dtype"``]."""
+        return self._WORKFLOW_TEMPLATES[self.name]['dtype']
 
     # Getter and setter properties
 
@@ -223,7 +227,7 @@ class WorkFlow(AbstractDataClass):
     @read.setter
     def read(self, value: Union[bool, Container[str]]) -> None:
         try:
-            self._read = bool(self.db) and self.mol_type in value  # type: ignore
+            self._read: bool = bool(self.db) and self.mol_type in value  # type: ignore
         except TypeError:  # value is not a container
             self._read = bool(value)
 
@@ -240,7 +244,7 @@ class WorkFlow(AbstractDataClass):
     @write.setter
     def write(self, value: Union[bool, Container[str]]) -> None:
         try:
-            self._write = bool(self.db) and self.mol_type in value
+            self._write: bool = bool(self.db) and self.mol_type in value
         except TypeError:  # value is not a container
             self._write = bool(value)
 
@@ -257,7 +261,7 @@ class WorkFlow(AbstractDataClass):
     @overwrite.setter
     def overwrite(self, value: Union[bool, Container[str]]) -> None:
         try:
-            self._overwrite = bool(self.db) and self.mol_type in value
+            self._overwrite: bool = bool(self.db) and self.mol_type in value
         except TypeError:  # value is not a container
             self._overwrite = bool(value)
 
@@ -274,7 +278,7 @@ class WorkFlow(AbstractDataClass):
     @jobs.setter
     def jobs(self, value: Union[None, Type[Job], Iterable[Optional[Type[Job]]]]) -> None:
         if isinstance(value, type):
-            self._jobs = (value,)
+            self._jobs: Tuple[Optional[Type[Job]], ...] = (value,)
         else:
             self._jobs = (None,) if value is None else tuple(value)
 
@@ -291,7 +295,7 @@ class WorkFlow(AbstractDataClass):
     @settings.setter
     def settings(self, value: Union[None, Settings, Iterable[Optional[Settings]]]) -> None:
         if isinstance(value, Settings):
-            self._settings = (value,)
+            self._settings: Tuple[Optional[Settings], ...] = (value,)
         else:
             self._settings = (None,) if value is None else tuple(value)
 
@@ -678,7 +682,7 @@ class WorkFlow(AbstractDataClass):
         return ret
 
 
-class PlamsInit(AbstractContextManager):
+class PlamsInit(ContextManager[None]):
     """A context manager for calling :func:`.restart_init` and |plams.finish|."""
 
     def __init__(self, path: Union[str, 'os.PathLike[str]'],

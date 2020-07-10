@@ -11,6 +11,12 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 * WiP: Added an option the import pre-built quantum dots.
 
 
+0.9.7
+*****
+* Update the documentation for https://github.com/nlesc-nano/data-CAT/pull/38.
+* Relax the pandas version requirement.
+
+
 0.9.6
 *****
 * Updated the documentation for https://github.com/nlesc-nano/data-CAT/pull/25.
