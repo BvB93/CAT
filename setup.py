@@ -27,7 +27,7 @@ except ModuleNotFoundError as ex:
 docs_require = [
     'sphinx>=2.4,<3.1',
     'sphinx_rtd_theme',
-    'data-CAT@git+https://github.com/nlesc-nano/data-CAT@master'
+    'data-CAT@git+https://github.com/nlesc-nano/data-CAT@devel'
 ]
 
 tests_require = [
