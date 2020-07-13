@@ -28,8 +28,26 @@ DB_PATH = PATH / 'database'
 def test_cat() -> None:
     """Tests for the CAT package."""
     yaml_path = PATH / 'CAT.yaml'
-    with open(yaml_path, 'r') as f:
-        arg = Settings(yaml.load(f, Loader=yaml.FullLoader))
 
-    arg.path = PATH
-    prep(arg)
+    with open(yaml_path, 'r') as f:
+        arg1 = Settings(yaml.load(f, Loader=yaml.FullLoader))
+        arg1.path = PATH
+    prep(arg1)
+
+    with open(yaml_path, 'r') as f:
+        arg2 = Settings(yaml.load(f, Loader=yaml.FullLoader))
+        arg2.path = PATH
+        arg2.optional.database.read = False
+    prep(arg2)
+
+    with open(yaml_path, 'r') as f:
+        arg3 = Settings(yaml.load(f, Loader=yaml.FullLoader))
+        arg3.path = PATH
+        arg3.input_ligands.append('CCO')
+    prep(arg3)
+
+    with open(yaml_path, 'r') as f:
+        arg4 = Settings(yaml.load(f, Loader=yaml.FullLoader))
+        arg4.path = PATH
+        arg4.optional.database.overwrite = True
+    prep(arg4)

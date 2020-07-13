@@ -25,6 +25,7 @@ optional:
         optimize: True
         split: True
         cosmo-rs: True
+        cdft: True
 
     qd:
         dirname: QD
