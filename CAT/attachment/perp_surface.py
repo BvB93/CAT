@@ -14,7 +14,7 @@ API
 
 """
 
-from typing import Union, Optional, Any
+from typing import Optional, Any, TYPE_CHECKING
 
 import numpy as np
 from scipy.spatial import ConvexHull, cKDTree
@@ -23,19 +23,23 @@ from scm.plams import Molecule
 
 try:
     import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
-
+    from matplitlib.pyplot import Figure
+    from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
     PLT: Optional[ImportError] = None
-    Figure = plt.Figure
+
 except ImportError as ex:
     PLT = ex
     Figure = 'matplotlib.pyplot.Figure'
 
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+else:
+    ArrayLike = 'numpy.typing.ArrayLike'
+
 __all__ = ['get_surface_vec', 'plot_vectors']
 
 
-def get_surface_vec(mol: Union[Molecule, np.ndarray],
-                    anchor: Union[None, Molecule, np.ndarray] = None) -> np.ndarray:
+def get_surface_vec(mol: ArrayLike, anchor: Optional[ArrayLike] = None) -> np.ndarray:
     """Construct a set of vectors perpendicular to the surface of **mol** and assign one to each atom in **anchor**.
 
     Utilizes a convex hull algorithm for identifying and partitioning the surface.
@@ -44,10 +48,10 @@ def get_surface_vec(mol: Union[Molecule, np.ndarray],
     ----------
     mol : array-like [:class:`float`], shape :math:`(n, 3)`
         A 2D array-like object with the Cartesian coordinates of a molecule.
-
+        Used for construction the surface-vectors.
     anchor : array-like [:class:`float`], shape :math:`(m, 3)`, optional
         A 2D array-like object with the Cartesian coordinates of a set of anchor atoms.
-        If ``None``, default to **mol**.
+        If :data:`None`, default to **mol**.
 
     Returns
     -------
@@ -57,15 +61,15 @@ def get_surface_vec(mol: Union[Molecule, np.ndarray],
 
     See Also
     --------
-    :class:`ConvexHull<scipy.spatial.ConvexHull>`
+    :class:`~scipy.spatial.ConvexHull`
         Convex hulls in N dimensions.
 
     """  # noqa
     xyz = np.array(mol, dtype=float, ndmin=2, copy=False)
     if anchor is None:
-        anchor = xyz
+        anchor_arr = xyz
     else:
-        anchor = np.array(anchor, dtype=float, ndmin=2, copy=False)
+        anchor_arr = np.array(anchor, dtype=float, ndmin=2, copy=False)
 
     # Construct the convex hull and extract the vertices
     hull = ConvexHull(xyz)
@@ -75,11 +79,11 @@ def get_surface_vec(mol: Union[Molecule, np.ndarray],
     # Construct and return the surface vectors
     vec = _get_perp_vecs(*simplice)
     _flip_vec(simplice_center, vec)
-    return vec[_find_nearest_center(anchor, simplice_center)]
+    return vec[_find_nearest_center(anchor_arr, simplice_center)]
 
 
-def plot_vectors(vec: np.ndarray,
-                 xyz: Optional[np.ndarray] = None,
+def plot_vectors(vec: ArrayLike,
+                 xyz: Optional[ArrayLike] = None,
                  show: bool = True, **kwargs: Any) -> Figure:
     r"""Create a 3D plot of all (3D) vectors in **vec**.
 
@@ -87,23 +91,20 @@ def plot_vectors(vec: np.ndarray,
     ----------
     vec : array-like [:class:`float`], shape :math:`(n, 3)`
         A 2D array-like object representing :math:`n` vectors.
-
     xyz : array-like [:class:`float`], shape :math:`(n, 3)`, optional
         An array with the Cartesian coordinates defining the
         origin of each vector in **vec**.
-        If ``None``, default to the origin (:code:`[0, 0, 0]`).
-
+        If :data:`None`, default to the origin (:code:`[0, 0, 0]`).
     show : :class:`bool`
         Show the created figure.
-
-    \**kwargs : :data:`Any<typing.Any>`
+    \**kwargs : :data:`~typing.Any`
         Further keyword arguments for
         :meth:`Axes.quiver()<matplotlib.pyplot.Axes.quiver>`
         such as the **length** keyword.
 
     Returns
     -------
-    :class:`Figure<matplotlib.pyplot.Figure>`
+    :class:`~matplotlib.pyplot.Figure`
         The resulting matplotlib Figure.
 
     """
@@ -113,15 +114,15 @@ def plot_vectors(vec: np.ndarray,
     # Parse arguments
     vec = np.array(vec, ndmin=2, dtype=float, copy=False)
     if xyz is not None:
-        xyz = np.array(xyz, ndmin=2, dtype=float, copy=False)
+        xyz_arr = np.array(xyz, ndmin=2, dtype=float, copy=False)
     else:
-        xyz = np.array(0.0, ndmin=2)
+        xyz_arr = np.array(0.0, ndmin=2)
 
     # Extract the x, y and z coordinates
-    if xyz.size == 1:
-        x = y = z = xyz
+    if xyz_arr.size == 1:
+        x = y = z = xyz_arr
     else:
-        x, y, z = xyz.T
+        x, y, z = xyz_arr.T
 
     # Extract the x, y and z components of the vector
     u, v, w = vec.T
@@ -145,12 +146,12 @@ def _set_axis_limit(ax, x, y, z, u, v, w) -> None:
     dx = max(1, max(max(abs(x)), max(abs(u))) - x_mean)
     dy = max(1, max(max(abs(y)), max(abs(v))) - y_mean)
     dz = max(1, max(max(abs(z)), max(abs(w))) - z_mean)
-    ax.set_xlim([x_mean-dx, x_mean+dx])
-    ax.set_ylim([y_mean-dy, y_mean+dy])
-    ax.set_zlim([z_mean-dz, z_mean+dz])
+    ax.set_xlim([x_mean - dx, x_mean + dx])
+    ax.set_ylim([y_mean - dy, y_mean + dy])
+    ax.set_zlim([z_mean - dz, z_mean + dz])
 
 
-def _find_nearest_center(anchor: np.ndarray, center: np.ndarray) -> np.ndarray:
+def _find_nearest_center(anchor: ArrayLike, center: ArrayLike) -> np.ndarray:
     """Find the points in **center** closest to those in **anchor**."""
     tree = cKDTree(center)
     _, idx = tree.query(anchor, k=1)
