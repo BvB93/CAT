@@ -17,7 +17,7 @@ API
 import reprlib
 import functools
 from types import MappingProxyType
-from typing import Generator, Optional, Iterable, FrozenSet, Any, Union, Callable, Mapping
+from typing import Generator, Optional, Iterable, FrozenSet, Any, Union, Callable, Mapping, TYPE_CHECKING
 from itertools import islice, takewhile
 from collections import abc
 
@@ -25,10 +25,15 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 from scm.plams import Molecule
-from nanoutils import as_nd_array
+from nanoutils import as_nd_array, Literal
 
-from CAT.utils import cycle_accumulate
-from CAT.attachment.edge_distance import edge_dist
+from .edge_distance import edge_dist
+from ..utils import cycle_accumulate
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+else:
+    ArrayLike = 'numpy.typing.ArrayLike'
 
 __all__ = ['distribute_idx']
 
@@ -42,9 +47,11 @@ OPERATION_MAPPING: Mapping[Union[str, Callable], Callable] = MappingProxyType({
     'max': np.nanargmax, max: np.nanargmax, np.max: np.nanargmax
 })
 
+Mode = Literal['uniform', 'cluster', 'random']
 
-def distribute_idx(core: Union[Molecule, np.ndarray], idx: Union[int, Iterable[int]], f: float,
-                   mode: str = 'uniform', **kwargs: Any) -> np.ndarray:
+
+def distribute_idx(core: ArrayLike, idx: Union[int, Iterable[int]], f: float,
+                   mode: Mode = 'uniform', **kwargs: Any) -> np.ndarray:
     r"""Create a new distribution of atomic indices from **idx** of length :code:`f * len(idx)`.
 
     Parameters
@@ -91,7 +98,7 @@ def distribute_idx(core: Union[Molecule, np.ndarray], idx: Union[int, Iterable[i
 
     """  # noqa
     # Convert **idx** into an array
-    idx = as_nd_array(idx, dtype=int)
+    idx_arr = as_nd_array(idx, dtype=int)
 
     # Validate the input
     if mode not in MODE_SET:
@@ -102,9 +109,9 @@ def distribute_idx(core: Union[Molecule, np.ndarray], idx: Union[int, Iterable[i
                          f"observed value: {reprlib.repr(f)}")
 
     # Create an array of indices
-    stop = max(1, int(round(f * len(idx))))
+    stop = max(1, int(round(f * len(idx_arr))))
     if mode in ('uniform', 'cluster'):
-        xyz = np.array(core, dtype=float, ndmin=2, copy=False)[idx]
+        xyz = np.array(core, dtype=float, ndmin=2, copy=False)[idx_arr]
         dist = edge_dist(xyz) if kwargs.get('follow_edge', False) else cdist(xyz, xyz)
         operation = 'min' if mode == 'uniform' else 'max'
         generator1 = uniform_idx(dist, operation=operation,
@@ -113,12 +120,12 @@ def distribute_idx(core: Union[Molecule, np.ndarray], idx: Union[int, Iterable[i
                                  randomness=kwargs.get('randomness', None),
                                  weight=kwargs.get('weight', lambda x: np.exp(-x)))
         generator2 = islice(generator1, stop)
-        ret = idx[np.fromiter(generator2, count=stop, dtype=int)]
+        ret = idx_arr[np.fromiter(generator2, count=stop, dtype=int)]
 
     elif mode == 'random':
-        ret = np.random.permutation(idx)
+        ret = np.random.permutation(idx_arr)
 
-    # Return a list of `p * len(idx)` atomic indices
+    # Return a list of `p * len(idx_arr)` atomic indices
     return ret[:stop]
 
 

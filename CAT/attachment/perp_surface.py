@@ -20,13 +20,13 @@ import numpy as np
 from scipy.spatial import ConvexHull, cKDTree
 
 from scm.plams import Molecule
+from nanoutils import raise_if
 
 try:
     import matplotlib.pyplot as plt
     from matplitlib.pyplot import Figure
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
     PLT: Optional[ImportError] = None
-
 except ImportError as ex:
     PLT = ex
     Figure = 'matplotlib.pyplot.Figure'
@@ -64,7 +64,7 @@ def get_surface_vec(mol: ArrayLike, anchor: Optional[ArrayLike] = None) -> np.nd
     :class:`~scipy.spatial.ConvexHull`
         Convex hulls in N dimensions.
 
-    """  # noqa
+    """  # noqa: E501
     xyz = np.array(mol, dtype=float, ndmin=2, copy=False)
     if anchor is None:
         anchor_arr = xyz
@@ -82,6 +82,7 @@ def get_surface_vec(mol: ArrayLike, anchor: Optional[ArrayLike] = None) -> np.nd
     return vec[_find_nearest_center(anchor_arr, simplice_center)]
 
 
+@raise_if(PLT)
 def plot_vectors(vec: ArrayLike,
                  xyz: Optional[ArrayLike] = None,
                  show: bool = True, **kwargs: Any) -> Figure:
@@ -108,9 +109,6 @@ def plot_vectors(vec: ArrayLike,
         The resulting matplotlib Figure.
 
     """
-    if PLT is not None:
-        raise PLT
-
     # Parse arguments
     vec = np.array(vec, ndmin=2, dtype=float, copy=False)
     if xyz is not None:

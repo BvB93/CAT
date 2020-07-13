@@ -13,7 +13,7 @@ API
 """
 
 import reprlib
-from typing import Union, Callable
+from typing import Union, Callable, TYPE_CHECKING
 
 import numpy as np
 
@@ -22,11 +22,16 @@ from nanoutils import array_combinations
 
 from .distribution import OPERATION_MAPPING
 
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+else:
+    ArrayLike = 'numpy.typing.ArrayLike'
+
 __all__ = ['brute_uniform_idx']
 
 
-def brute_uniform_idx(mol: Union[Molecule, np.ndarray],
-                      idx: Union[int, np.ndarray], n: int = 2,
+def brute_uniform_idx(mol: ArrayLike,
+                      idx: ArrayLike, n: int = 2,
                       operation: str = 'min',
                       weight: Callable[[np.ndarray], np.ndarray] = lambda x: np.exp(-x)
                       ) -> np.ndarray:
@@ -42,21 +47,17 @@ def brute_uniform_idx(mol: Union[Molecule, np.ndarray],
     ----------
     mol : array-like [:class:`float`], shape :math:`(m,3)`
         An array-like object with Cartesian coordinate representing a collection of central atoms.
-
-    idx : array-like [:class:`int`], shape :math:`(l,p)`
+    idx : array-like [:class:`int`], shape :math:`(l,)`
         An array-like object with indices in **mol**.
-        Combinations will be explored and evaluated along axis ``-1`` of the passed array.
-
+        Combinations will be explored and evaluated along ``axis=-1`` of the passed array.
     n : :class:`int`
         The number of to-be returned opposing atoms.
         Should be larger than or equal to 1.
-
     operation : :class:`str`
         Whether to evaluate the weighted distance using :func:`argmin()<numpy.nanargmin>` or
-        :func:`argmax()<numpy.nanargmax>`.
+        :func:`~numpy.nanargmax`.
         Accepted values are ``"min"`` and ``"max"``.
-
-    weight : :data:`Callable<typing.Callable>`
+    weight : :data:`~typing.Callable`
         A callable for applying weights to the distance; default: :math:`e^{-x}`.
         The callable should take an array as argument and return a new array,
         *e.g.* :func:`numpy.exp`.
@@ -68,7 +69,7 @@ def brute_uniform_idx(mol: Union[Molecule, np.ndarray],
 
     See Also
     --------
-    :func:`uniform_idx()<CAT.attachment.distribution.uniform_idx>`
+    :func:`~CAT.attachment.distribution.uniform_idx`
         Yield the column-indices of **dist** which yield a uniform or clustered distribution.
 
     """  # noqa
@@ -79,22 +80,22 @@ def brute_uniform_idx(mol: Union[Molecule, np.ndarray],
                          "accepted values: ('min', 'max')") from ex
 
     # Find the n atoms in mol2 closest to each atom in mol1
-    idx = np.array(idx, ndmin=1, copy=False)
+    idx_arr = np.array(idx, ndmin=1, copy=False)
     xyz = np.array(mol, ndmin=2, copy=False)
-    if not (0 < n <= idx.shape[-1]):
+    if not (0 < n <= idx_arr.shape[-1]):
         raise ValueError("'n' should be larger than 0 and smaller than or equal to the last axis of"
-                         f" 'idx' ({repr(idx.shape[-1])}); observed value: {repr(n)}")
+                         f" 'idx' ({idx_arr.shape[-1]!r}); observed value: {n!r}")
 
     # Evaluate all combinations of length n constructed from an iterable of size k
-    idx2 = np.swapaxes(array_combinations(idx, r=n), 0, 1)
+    idx2 = np.swapaxes(array_combinations(idx_arr, r=n), 0, 1)
     xyz2 = xyz[idx2]
 
     # Construct a weighted distance matrix
     dist = np.triu(np.linalg.norm(xyz2[..., None, :] - xyz2[..., None, :, :], axis=-1))
-    dist.shape = len(idx), -1, n**2
+    dist.shape = len(idx_arr), -1, n**2
     dist_weight = weight(dist).sum(axis=-1)
 
     # Slice and return
-    i = np.arange(len(idx))
+    i = np.arange(len(idx_arr))
     j = arg_func(dist_weight, axis=-1)
     return idx2[i, j]
