@@ -14,13 +14,12 @@ API
 
 """
 
-from typing import Optional, Any, TYPE_CHECKING
+from typing import Optional, Any
 
 import numpy as np
 from scipy.spatial import ConvexHull, cKDTree
 
-from scm.plams import Molecule
-from nanoutils import raise_if
+from nanoutils import raise_if, ArrayLike
 
 try:
     import matplotlib.pyplot as plt
@@ -30,11 +29,6 @@ try:
 except ImportError as ex:
     PLT = ex
     Figure = 'matplotlib.pyplot.Figure'
-
-if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
-else:
-    ArrayLike = 'numpy.typing.ArrayLike'
 
 __all__ = ['get_surface_vec', 'plot_vectors']
 

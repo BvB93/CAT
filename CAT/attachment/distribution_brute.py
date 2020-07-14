@@ -13,19 +13,13 @@ API
 """
 
 import reprlib
-from typing import Union, Callable, TYPE_CHECKING
+from typing import Callable
 
 import numpy as np
 
-from scm.plams import Molecule
-from nanoutils import array_combinations
+from nanoutils import array_combinations, ArrayLike
 
 from .distribution import OPERATION_MAPPING
-
-if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
-else:
-    ArrayLike = 'numpy.typing.ArrayLike'
 
 __all__ = ['brute_uniform_idx']
 

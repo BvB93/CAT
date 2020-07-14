@@ -17,23 +17,16 @@ API
 import reprlib
 import functools
 from types import MappingProxyType
-from typing import Generator, Optional, Iterable, FrozenSet, Any, Union, Callable, Mapping, TYPE_CHECKING
+from typing import Generator, Optional, Iterable, FrozenSet, Any, Union, Callable, Mapping
 from itertools import islice, takewhile
 from collections import abc
 
 import numpy as np
 from scipy.spatial.distance import cdist
-
-from scm.plams import Molecule
-from nanoutils import as_nd_array, Literal
+from nanoutils import as_nd_array, Literal, ArrayLike
 
 from .edge_distance import edge_dist
 from ..utils import cycle_accumulate
-
-if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
-else:
-    ArrayLike = 'numpy.typing.ArrayLike'
 
 __all__ = ['distribute_idx']
 
@@ -129,7 +122,7 @@ def distribute_idx(core: ArrayLike, idx: Union[int, Iterable[int]], f: float,
     return ret[:stop]
 
 
-def uniform_idx(dist: np.ndarray, operation: str = 'min',
+def uniform_idx(dist: ArrayLike, operation: str = 'min',
                 cluster_size: Union[int, Iterable[int]] = 1,
                 start: Optional[int] = None, randomness: Optional[float] = None,
                 weight: Callable[[np.ndarray], np.ndarray] = lambda x: np.exp(-x)

@@ -5,26 +5,23 @@ Index
 .. currentmodule:: CAT.attachment.edge_distance
 .. autosummary::
     edge_dist
-    array_combinations
     to_convex
 
 API
 ---
 .. autofunction:: edge_dist
-.. autofunction:: array_combinations
 .. autofunction:: to_convex
 
 """
 
-import reprlib
-from typing import Optional, Any, TYPE_CHECKING
+from typing import Optional, Any
 
 import numpy as np
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import dijkstra
 from scipy.spatial import ConvexHull
 
-from nanoutils import array_combinations, raise_if
+from nanoutils import array_combinations, raise_if, ArrayLike
 
 try:
     import matplotlib.pyplot as plt
@@ -35,18 +32,13 @@ except ImportError as ex:
     PLT = ex
     Figure = 'matplotlib.pyplot.Figure'
 
-if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
-else:
-    ArrayLike = 'numpy.typing.ArrayLike'
-
 __all__ = ['edge_dist', 'plot_polyhedron']
 
 
 def to_convex(xyz: ArrayLike, n: float = 1.0) -> np.ndarray:
     r"""Round all edges in **xyz** by a factor **n**: (:math:`0 < n \le 1`)."""
     if not (0 < n <= 1):
-        raise ValueError(f"Expected '0 < n <= 1'; observed: {reprlib.repr(n)}")
+        raise ValueError(f"Expected '0 < n <= 1'; observed: {n!r}")
     xyz_arr = np.asarray(xyz, dtype=float)
     xyz_arr = xyz_arr - xyz.mean(axis=0)
 

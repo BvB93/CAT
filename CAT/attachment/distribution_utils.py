@@ -19,11 +19,14 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 from scm.plams import Molecule, Atom, rotation_matrix
+from nanoutils import PathType
 
 from .distribution import distribute_idx
 
+__all__ = ['test_distribute']
 
-def test_distribute(mol: Union[Molecule, str], symbol: str,
+
+def test_distribute(mol: Union[Molecule, PathType], symbol: str,
                     f_range: Union[float, Iterable[float]],
                     rotate: Optional[Tuple[float, float, float]] = (0.1, -0.1, 0.9),
                     **kwargs: Any) -> Molecule:
@@ -51,19 +54,15 @@ def test_distribute(mol: Union[Molecule, str], symbol: str,
     ----------
     mol : :class:`Molecule` or :class:`str`
         A molecule or path+filename containing a molecule.
-
     symbol : :class:`str`
         The atomic symbol of the anchor atom.
-
-    f_range : :class:`float` or :class:`Iterable<collections.abc.Iterable>` [:class:`float`]
+    f_range : :class:`float` or :class:`~collections.abc.Iterable` [:class:`float`]
         A float or iterable of floats subject to the following constraint: :math:`0 < f \le 1`.
-
-    rotate : :class:`Sequence<collection.abc.Sequence>` [:class:`float`], shape :math:`(3,)`, optional
+    rotate : :class:`~collection.abc.Sequence` [:class:`float`], shape :math:`(3,)`, optional
         A sequence of three floats representing a molecular orientation.
-
     \**kwargs : :data:`Any<typing.Any>`
         Further keyword arguments for
-        :func:`distribute_idx()<CAT.attachment.distribution.distribute_idx>`:
+        :func:`~CAT.attachment.distribution.distribute_idx`:
         ``follow_edge``, ``mode`` and ``start``.
 
     Returns
