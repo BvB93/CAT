@@ -11,7 +11,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 version = {}
 with open(os.path.join(here, 'CAT', '__version__.py')) as f:
     exec(f.read(), version)
-__version__: str = version['__version__']
 
 with open('README.rst', encoding='utf-8') as readme_file:
     readme = readme_file.read()
@@ -19,7 +18,7 @@ with open('README.rst', encoding='utf-8') as readme_file:
 # Check if rdkit is manually installed (as it is not available via pypi)
 try:
     import rdkit
-except ModuleNotFoundError as ex:
+except ModuleNotFoundError:
     raise ModuleNotFoundError(
         "'CAT' requires the 'rdkit' package: https://anaconda.org/conda-forge/rdkit"
     ) from None
@@ -48,7 +47,7 @@ tests_require += docs_require
 
 setup(
     name='CAT',
-    version=__version__,
+    version=version['__version__'],
     description=('A collection of tools designed for the automatic '
                  'construction of chemical compounds.'),
     long_description=f'{readme}\n\n',
@@ -116,7 +115,7 @@ setup(
     python_requires='>=3.6',
     install_requires=[
         'h5py',
-        'Nano-Utils>=0.4.3',
+        'Nano-Utils>=1.1.0',
         'numpy',
         'scipy',
         'pandas',
