@@ -430,14 +430,16 @@ class WorkFlow(AbstractDataClass):
 
         if not self.read:
             _df = df
-            df = df.index
+            df = df.copy()
+            df[MOL] = None
 
         df, df_bool = self.db.to_df(df, self.mol_type, *columns, read_mol=read_mol)
 
+        if not self.read:
+            _df.sort_values([HDF5_INDEX], inplace=True)
+
         if self.overwrite:
             df_bool[:] = True
-        if not self.read and read_mol:
-            _df[HDF5_INDEX] = df[HDF5_INDEX]
         return df_bool
 
     def to_db(self, df: pd.DataFrame, df_bool: pd.DataFrame,

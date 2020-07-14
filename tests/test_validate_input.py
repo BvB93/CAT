@@ -3,13 +3,12 @@
 import os
 from os.path import join
 from pathlib import Path
-from shutil import rmtree
 
 import yaml
 from unittest import mock
 
 from rdkit import Chem
-from scm.plams import (Settings, AMSJob)
+from scm.plams import Settings, AMSJob
 from assertionlib import assertion
 from nanoutils import delete_finally
 
@@ -59,17 +58,15 @@ def test_validate_input() -> None:
     ref.qd.dirname = join(PATH, 'qd')
     ref.qd.dissociate = False
     ref.qd.multi_ligand = None
-    ref.qd.optimize = {'job1': AMSJob, 'keep_files': True, 'use_ff': False, 's2': {'description': 'UFF with the default forcefield', 'input': {'uff': {'library': 'uff'}, 'ams': {'system': {'bondorders': {'_1': None}}}}}, 's1': {'description': 'UFF with the default forcefield', 'input': {'uff': {'library': 'uff'}, 'ams': {'system': {'bondorders': {'_1': None}}}}}, 'job2': AMSJob}  # noqa
+    ref.qd.optimize = {'job1': AMSJob, 'keep_files': True, 'use_ff': False, 's2': {'description': 'UFF with the default forcefield', 'input': {'uff': {'library': 'uff'}}}, 's1': {'description': 'UFF with the default forcefield', 'input': {'uff': {'library': 'uff'}}}, 'job2': AMSJob}  # noqa
 
     ref.forcefield = Settings()
 
     func_groups = s.optional.ligand.pop('functional_groups')
 
-    try:
-        for mol in func_groups:
-            assertion.isinstance(mol, Chem.Mol)
-        assertion.eq(s.optional, ref)
-    finally:
-        rmtree(join(PATH, 'ligand'))
-        rmtree(join(PATH, 'qd'))
-        rmtree(join(PATH, 'database'))
+    for mol in func_groups:
+        assertion.isinstance(mol, Chem.Mol)
+
+    iterator = ((k, v, ref[k]) for k, v in s.optional.items())
+    for k, v1, v2 in iterator:
+        assertion.eq(v1, v2, message=k)

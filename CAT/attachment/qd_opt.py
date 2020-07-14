@@ -46,7 +46,8 @@ def init_qd_opt(qd_df: SettingsDataFrame) -> None:
     workflow = WorkFlow.from_template(qd_df, name='qd_opt')
 
     # Pull from the databases
-    df_bool = workflow.from_db(qd_df, read_mol=True)
+    df_bool = workflow.from_db(qd_df)
+    df_bool[OPT] = ~qd_df[OPT]
     workflow(start_qd_opt, qd_df, columns=[MOL], index=df_bool[OPT])
 
     # Sets a nested list

@@ -81,6 +81,7 @@ def init_qd_construction(ligand_df: SettingsDataFrame, core_df: SettingsDataFram
     qd_df = _get_df(core_df.index, ligand_df.index, ligand_df.settings)
     qd_df[MOL] = None
     qd_df[LIGAND_COUNT] = 0
+    qd_df[OPT] = False
     qd_df.sort_index(inplace=True)
     if not construct_qd:
         return qd_df
@@ -96,7 +97,7 @@ def init_qd_construction(ligand_df: SettingsDataFrame, core_df: SettingsDataFram
                                ligand_df.loc[(k, m), MOL], workflow)
 
     # Start the ligand optimization
-    idx = df_bool[MOL]
+    idx = df_bool[MOL] if workflow.read else slice(None)
     workflow(construct_mol_series, qd_df, columns=MOL, index=idx,
              core_df=core_df, ligand_df=ligand_df)
 

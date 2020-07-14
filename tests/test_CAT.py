@@ -43,7 +43,7 @@ def test_cat() -> None:
     with open(yaml_path, 'r') as f:
         arg3 = Settings(yaml.load(f, Loader=yaml.FullLoader))
         arg3.path = PATH
-        arg3.input_ligands.append('CCO')
+        arg3.input_ligands += ['CSe', 'CS']
     prep(arg3)
 
     with open(yaml_path, 'r') as f:
