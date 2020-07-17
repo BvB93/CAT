@@ -20,15 +20,16 @@ import os
 import gzip
 import math
 import pickle
-from typing import Iterator, Iterable, Collection
+from typing import Iterator, Iterable, Collection, Optional, Dict
 from os.path import join, exists
 from itertools import chain
 
 import numpy as np
 from scm.plams import read_molecules, Molecule
 from scm.plams.interfaces.molecule.rdkit import to_rdmol
-from rdkit.Chem import rdMolDescriptors, FindMolChiralCenters
+from rdkit.Chem import rdMolDescriptors, FindMolChiralCenters, Mol
 
+from nanoutils import PathType
 from CAT.logger import logger
 from CAT.attachment.dye import label_lig, label_core, substitution
 from CAT.attachment.substitution_symmetry import del_equiv_structures
@@ -149,7 +150,7 @@ def export_dyes(mol_list: Iterable[Molecule],
 ###########################################################################
 
 
-def _compute_sas(mol, sa_model: dict):
+def _compute_sas(mol: Mol, sa_model: Dict[int, float]) -> float:
     fp = rdMolDescriptors.GetMorganFingerprint(mol, 2)
     fps = fp.GetNonzeroElements()
     score1 = 0.
@@ -212,14 +213,19 @@ def _compute_sas(mol, sa_model: dict):
     return sascore
 
 
-def _load_sa_model(filename: str):
+def _load_sa_model(filename: PathType) -> Dict[int, float]:
     sa_score = pickle.load(gzip.open(filename))
-    return {i[j]: float(i[0]) for i in sa_score for j in range(1, len(i))}
+    return {j: i0 for i0, *i in sa_score for j in i}
 
 
-def sa_scores(mols: Iterable[Molecule], filename: str = 'SA_score.pkl.gz') -> np.ndarray:
+def sa_scores(mols: Iterable[Molecule], filename: Optional[PathType] = None) -> np.ndarray:
     """Calculate the synthetic accessibility score for all molecules in **mols**."""
-    sa_model = _load_sa_model(filename)
-    mols = (to_rdmol(mol) for mol in mols)
-    _scores = (_compute_sas(mol, sa_model) if mol is not None else None for mol in mols)
-    return np.array(list(map(lambda x: 10 if x is None else x, _scores)))
+    sa_model = _load_sa_model(filename) if filename is not None else {}
+    rdmols = (to_rdmol(mol) for mol in mols)
+
+    try:
+        count = len(mols)  # type: ignore
+    except TypeError:
+        count = -1
+    iterator = (_compute_sas(mol, sa_model) for mol in rdmols)
+    return np.fromiter(iterator, dtype=float, count=count)
